@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			#map {
+				height: 100%;
+			}
+		</style>
+
+		<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}"></script>
+	</head>
+
+	<body>
+		<div id="map"></div>
+
+		<script>
+			let mapContainer = document.getElementById("map");
+
+			// 카카오맵 초기화
+			let map = new kakao.maps.Map(mapContainer, {
+				center: new kakao.maps.LatLng(
+					37.55930390626646,
+					127.04323445018552
+				),
+				level: 3,
+			});
+
+			// 페이지 크기 변경 시 지도 크기 변경
+			const resizeMap = () => {
+				let mapContainer = document.getElementById("map");
+				mapContainer.style.height = window.innerHeight + "px";
+			};
+
+			window.onresize = () => {
+				resizeMap();
+			};
+
+			resizeMap();
+		</script>
+	</body>
+</html>
