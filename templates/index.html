@@ -14,7 +14,10 @@
 			}
 		</style>
 
-		<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"></script>
+		<script
+			type="text/javascript"
+			src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"
+		></script>
 	</head>
 
 	<body>
@@ -35,7 +38,6 @@
 			let map = new kakao.maps.Map(mapContainer, mapOptions),
 				overlays = []; // 지도에 그려진 도형을 담을 배열
 
-			// 가져오기 버튼을 클릭하면 호출되는 핸들러 함수입니다
 			// Drawing Manager로 그려진 객체 데이터를 가져와 아래 지도에 표시합니다
 			const getDataFromJSON = () => {
 				// 지도에 그려진 도형이 있다면 모두 지웁니다
