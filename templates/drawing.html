@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			.mapWrap {
+				width: 100%;
+				height: 100%;
+				position: relative;
+			}
+
+			.modes {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				z-index: 1;
+			}
+
+			#map {
+				width: 100%;
+				height: 1000px;
+			}
+		</style>
+
+		<script
+			type="text/javascript"
+			src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"
+		></script>
+	</head>
+	<body>
+		<div class="mapWrap">
+			<div id="map"></div>
+			<p class="modes">
+				<button onclick="selectOverlay('MARKER')">마커</button>
+				<button onclick="selectOverlay('POLYLINE')">선</button>
+				<button onclick="saveJSON()">다운로드</button>
+			</p>
+		</div>
+
+		<script>
+			// 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+			let mapContainer = document.getElementById("map"),
+				mapOptions = {
+					center: new kakao.maps.LatLng(
+						37.55930390626646,
+						127.04323445018552
+					), // 지도의 중심좌표
+					level: 3, // 지도의 확대 레벨
+				};
+
+			// 지도 div와 지도 옵션으로 지도를 생성합니다
+			let map = new kakao.maps.Map(mapContainer, mapOptions);
+
+			let options = {
+				// Drawing Manager를 생성할 때 사용할 옵션입니다
+				map: map, // Drawing Manager로 그리기 요소를 그릴 map 객체입니다
+				drawingMode: [
+					// Drawing Manager로 제공할 그리기 요소 모드입니다
+					kakao.maps.drawing.OverlayType.MARKER,
+					kakao.maps.drawing.OverlayType.POLYLINE,
+				],
+				// 사용자에게 제공할 그리기 가이드 툴팁입니다
+				// 사용자에게 도형을 그릴때, 드래그할때, 수정할때 가이드 툴팁을 표시하도록 설정합니다
+				guideTooltip: ["draw", "drag", "edit"],
+				markerOptions: {
+					// 마커 옵션입니다
+					draggable: true, // 마커를 그리고 나서 드래그 가능하게 합니다
+					removable: true, // 마커를 삭제 할 수 있도록 x 버튼이 표시됩니다
+				},
+				polylineOptions: {
+					// 선 옵션입니다
+					draggable: true, // 그린 후 드래그가 가능하도록 설정합니다
+					removable: true, // 그린 후 삭제 할 수 있도록 x 버튼이 표시됩니다
+					editable: true, // 그린 후 수정할 수 있도록 설정합니다
+					strokeColor: "#39f", // 선 색
+					hintStrokeStyle: "dash", // 그리중 마우스를 따라다니는 보조선의 선 스타일
+					hintStrokeOpacity: 0.5, // 그리중 마우스를 따라다니는 보조선의 투명도
+				},
+			};
+
+			// 위에 작성한 옵션으로 Drawing Manager를 생성합니다
+			let manager = new kakao.maps.drawing.DrawingManager(options);
+
+			// 버튼 클릭 시 호출되는 핸들러 입니다
+			const selectOverlay = (type) => {
+				// 그리기 중이면 그리기를 취소합니다
+				manager.cancel();
+
+				// 클릭한 그리기 요소 타입을 선택합니다
+				manager.select(kakao.maps.drawing.OverlayType[type]);
+			};
+
+			// 가져오기 버튼을 클릭하면 호출되는 핸들러 함수입니다
+			// Drawing Manager로 그려진 객체 데이터를 가져와 아래 지도에 표시합니다
+			const saveJSON = () => {
+				// Drawing Manager에서 그려진 데이터 정보를 가져옵니다
+				let data = manager.getData();
+
+				// JSON 문자열로 변환
+				let jsonString = JSON.stringify(data, null, 2); // null, 2는 들여쓰기 옵션
+
+				// 파일 이름 및 타입 설정
+				let fileName = "data.json";
+				let mimeType = "application/json";
+
+				// 데이터를 Blob으로 변환
+				let blob = new Blob([jsonString], { type: mimeType });
+
+				// Blob을 URL로 생성
+				let url = URL.createObjectURL(blob);
+
+				// 다운로드 링크 생성
+				let downloadLink = document.createElement("a");
+				downloadLink.href = url;
+				downloadLink.download = fileName;
+				downloadLink.textContent = "Download JSON";
+
+				// 링크를 추가하고 클릭하여 다운로드 실행
+				document.body.appendChild(downloadLink);
+				downloadLink.click();
+
+				// 다운로드 후 링크 제거
+				document.body.removeChild(downloadLink);
+			};
+
+			// Drawing Manager에서 가져온 데이터 중 마커를 아래 지도에 표시하는 함수입니다
+			const drawMarker = (markers) => {
+				for (i = 0; i < markers.length; i++) {
+					let marker = new kakao.maps.Marker({
+						map: map,
+						position: new kakao.maps.LatLng(
+							markers[i].y,
+							markers[i].x
+						),
+						zIndex: markers[i].zIndex,
+					});
+
+					overlays.push(marker);
+				}
+			};
+
+			// Drawing Manager에서 가져온 데이터 중 선을 아래 지도에 표시하는 함수입니다
+			const drawPolyline = (lines) => {
+				for (i = 0; i < lines.length; i++) {
+					let path = pointsToPath(lines[i].points);
+					let style = lines[i].options;
+					let polyline = new kakao.maps.Polyline({
+						map: map,
+						path: path,
+						strokeColor: style.strokeColor,
+						strokeOpacity: style.strokeOpacity,
+						strokeStyle: style.strokeStyle,
+						strokeWeight: style.strokeWeight,
+					});
+
+					overlays.push(polyline);
+				}
+			};
+
+			// Drawing Manager에서 가져온 데이터 중
+			// 선과 다각형의 꼭지점 정보를 kakao.maps.LatLng객체로 생성하고 배열로 반환하는 함수입니다
+			const pointsToPath = (points) => {
+				let path = [];
+
+				for (i = 0; i < points.length; i++) {
+					let latlng = new kakao.maps.LatLng(
+						points[i].y,
+						points[i].x
+					);
+					path.push(latlng);
+				}
+
+				return path;
+			};
+		</script>
+	</body>
+</html>
