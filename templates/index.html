@@ -14,23 +14,106 @@
 			}
 		</style>
 
-		<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}"></script>
+		<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"></script>
 	</head>
 
 	<body>
 		<div id="map"></div>
 
 		<script>
-			let mapContainer = document.getElementById("map");
+			// Drawing Manager에서 데이터를 가져와 도형을 표시할 아래쪽 지도 div
+			let mapContainer = document.getElementById("map"),
+				mapOptions = {
+					center: new kakao.maps.LatLng(
+						37.55930390626646,
+						127.04323445018552
+					), // 지도의 중심좌표
+					level: 3, // 지도의 확대 레벨
+				};
 
-			// 카카오맵 초기화
-			let map = new kakao.maps.Map(mapContainer, {
-				center: new kakao.maps.LatLng(
-					37.55930390626646,
-					127.04323445018552
-				),
-				level: 3,
-			});
+			// 지도 div와 지도 옵션으로 지도를 생성합니다
+			let map = new kakao.maps.Map(mapContainer, mapOptions),
+				overlays = []; // 지도에 그려진 도형을 담을 배열
+
+			// 가져오기 버튼을 클릭하면 호출되는 핸들러 함수입니다
+			// Drawing Manager로 그려진 객체 데이터를 가져와 아래 지도에 표시합니다
+			const getDataFromJSON = () => {
+				// 지도에 그려진 도형이 있다면 모두 지웁니다
+				removeOverlays();
+
+				fetch("{{ jsonURL }}")
+					.then((response) => response.json())
+					.then((data) => {
+						console.log(data);
+						// 지도에 가져온 데이터로 도형들을 그립니다
+						drawMarker(data[kakao.maps.drawing.OverlayType.MARKER]);
+						drawPolyline(
+							data[kakao.maps.drawing.OverlayType.POLYLINE]
+						);
+					})
+					.catch((error) =>
+						console.error("Error fetching JSON:", error)
+					);
+			};
+
+			// 아래 지도에 그려진 도형이 있다면 모두 지웁니다
+			const removeOverlays = () => {
+				for (i = 0; i < overlays.length; i++) {
+					overlays[i].setMap(null);
+				}
+
+				overlays = [];
+			};
+
+			// Drawing Manager에서 가져온 데이터 중 마커를 아래 지도에 표시하는 함수입니다
+			const drawMarker = (markers) => {
+				for (i = 0; i < markers.length; i++) {
+					let marker = new kakao.maps.Marker({
+						map: map,
+						position: new kakao.maps.LatLng(
+							markers[i].y,
+							markers[i].x
+						),
+						zIndex: markers[i].zIndex,
+					});
+
+					overlays.push(marker);
+				}
+			};
+
+			// Drawing Manager에서 가져온 데이터 중 선을 아래 지도에 표시하는 함수입니다
+			const drawPolyline = (lines) => {
+				for (i = 0; i < lines.length; i++) {
+					let style = lines[i].options;
+					let polyline = new kakao.maps.Polyline({
+						map: map,
+						path: pointsToPath(lines[i].points),
+						strokeColor: style.strokeColor,
+						strokeOpacity: style.strokeOpacity,
+						strokeStyle: style.strokeStyle,
+						strokeWeight: style.strokeWeight,
+					});
+
+					overlays.push(polyline);
+				}
+			};
+
+			// Drawing Manager에서 가져온 데이터 중
+			// 선과 다각형의 꼭지점 정보를 kakao.maps.LatLng객체로 생성하고 배열로 반환하는 함수입니다
+			const pointsToPath = (points) => {
+				let path = [];
+
+				for (i = 0; i < points.length; i++) {
+					let latlng = new kakao.maps.LatLng(
+						points[i].y,
+						points[i].x
+					);
+
+					path.push(latlng);
+				}
+
+				return path;
+			};
 
 			// 페이지 크기 변경 시 지도 크기 변경
 			const resizeMap = () => {
@@ -43,6 +126,7 @@
 			};
 
 			resizeMap();
+			getDataFromJSON();
 		</script>
 	</body>
 </html>
