@@ -52,6 +52,7 @@
 						drawPolyline(
 							data[kakao.maps.drawing.OverlayType.POLYLINE]
 						);
+						console.log(overlays);
 					})
 					.catch((error) =>
 						console.error("Error fetching JSON:", error)
@@ -60,7 +61,7 @@
 
 			// 아래 지도에 그려진 도형이 있다면 모두 지웁니다
 			const removeOverlays = () => {
-				for (i = 0; i < overlays.length; i++) {
+				for (let i = 0; i < overlays.length; i++) {
 					overlays[i].setMap(null);
 				}
 
@@ -69,7 +70,7 @@
 
 			// Drawing Manager에서 가져온 데이터 중 마커를 아래 지도에 표시하는 함수입니다
 			const drawMarker = (markers) => {
-				for (i = 0; i < markers.length; i++) {
+				for (let i = 0; i < markers.length; i++) {
 					let marker = new kakao.maps.Marker({
 						map: map,
 						position: new kakao.maps.LatLng(
@@ -85,7 +86,7 @@
 
 			// Drawing Manager에서 가져온 데이터 중 선을 아래 지도에 표시하는 함수입니다
 			const drawPolyline = (lines) => {
-				for (i = 0; i < lines.length; i++) {
+				for (let i = 0; i < lines.length; i++) {
 					let style = lines[i].options;
 					let polyline = new kakao.maps.Polyline({
 						map: map,
@@ -105,7 +106,7 @@
 			const pointsToPath = (points) => {
 				let path = [];
 
-				for (i = 0; i < points.length; i++) {
+				for (let i = 0; i < points.length; i++) {
 					let latlng = new kakao.maps.LatLng(
 						points[i].y,
 						points[i].x
