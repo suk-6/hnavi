@@ -16,7 +16,7 @@ def drawing():
 
 @app.route('/overlay/<int:index>')
 def overlay(index):
-    return render_template('overlay.html')
+    return render_template('overlay.html', index=index)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)
