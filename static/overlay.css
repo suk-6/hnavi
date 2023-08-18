@@ -1,0 +1,70 @@
+html,
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	border: none;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.Wrap {
+	width: 100%;
+	height: 100%;
+}
+
+.Title {
+	width: 100%;
+	height: 51.67px;
+	position: relative;
+}
+
+.Background {
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	top: 0px;
+	position: absolute;
+	background: #d9d9d9;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.Exit {
+	width: 10.57px;
+	height: 10.42px;
+	left: 92%;
+	top: 7px;
+	position: absolute;
+}
+
+.fullAddress {
+	width: 94.69px;
+	height: 11.67px;
+	left: 65%;
+	top: 33.33px;
+	position: absolute;
+	text-align: right;
+	color: black;
+	font-size: 10px;
+	font-family: Pretendard;
+	font-weight: 600;
+	word-wrap: break-word;
+}
+
+.Address {
+	width: 234.97px;
+	height: 38.33px;
+	left: 16.09px;
+	top: 25%;
+	position: absolute;
+	color: black;
+	font-size: 20px;
+	font-family: Pretendard;
+	font-weight: 700;
+	word-wrap: break-word;
+}
+
+.Details {
+	background-color: #fff;
+}
