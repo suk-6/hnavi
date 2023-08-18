@@ -14,5 +14,9 @@ def index():
 def drawing():
     return render_template('drawing.html', apiKey=os.getenv('KAKAO_API_KEY'))
 
+@app.route('/overlay/<int:index>')
+def overlay(index):
+    return render_template('overlay.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, debug=True)

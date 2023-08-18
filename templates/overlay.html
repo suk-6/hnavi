@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Overlay</title>
+
+		<style>
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				border: none;
+				border-top-left-radius: 10px;
+				border-top-right-radius: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="Wrap" style="width: 100%; height: 100%">
+			<div
+				class="Title"
+				style="width: 100%; height: 51.67px; position: relative"
+			>
+				<div
+					class="Background"
+					style="
+						width: 100%;
+						height: 100%;
+						left: 0px;
+						top: 0px;
+						position: absolute;
+						background: #d9d9d9;
+						border-top-left-radius: 10px;
+						border-top-right-radius: 10px;
+					"
+				></div>
+				<button onclick="closeOverlay()">
+					<div
+						class="Exit"
+						style="
+							width: 10.57px;
+							height: 10.42px;
+							left: 92%;
+							top: 7px;
+							position: absolute;
+						"
+					>
+						<svg
+							width="11"
+							height="11"
+							viewBox="0 0 11 11"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M10.4134 9.52763C10.4624 9.57602 10.5014 9.63347 10.528 9.69669C10.5545 9.75992 10.5682 9.82768 10.5682 9.89607C10.5682 9.96457 10.5545 10.0323 10.528 10.0956C10.5014 10.1588 10.4624 10.2162 10.4134 10.2646C10.3643 10.313 10.306 10.3514 10.2418 10.3776C10.1777 10.4038 10.109 10.4173 10.0395 10.4173C9.97012 10.4173 9.90142 10.4038 9.83722 10.3776C9.77312 10.3514 9.71482 10.313 9.66572 10.2646L5.28411 5.94496L0.902502 10.2646C0.803362 10.3624 0.668892 10.4173 0.528672 10.4173C0.388462 10.4173 0.253992 10.3624 0.154846 10.2646C0.0557 10.1669 0 10.0344 0 9.89607C0 9.75791 0.0557 9.62536 0.154846 9.52763L4.53711 5.20863L0.154846 0.889615C0.0557 0.791883 0 0.659334 0 0.521123C0 0.382913 0.0557 0.250363 0.154846 0.152634C0.253992 0.054904 0.388462 0 0.528672 0C0.668892 0 0.803362 0.054904 0.902502 0.152634L5.28411 4.4723L9.66572 0.152634C9.76482 0.054904 9.89932 0 10.0395 0C10.1797 0 10.3142 0.054904 10.4134 0.152634C10.5125 0.250363 10.5682 0.382913 10.5682 0.521123C10.5682 0.659334 10.5125 0.791883 10.4134 0.889615L6.03111 5.20863L10.4134 9.52763Z"
+								fill="black"
+							/>
+						</svg>
+					</div>
+				</button>
+				<div
+					style="
+						width: 94.69px;
+						height: 11.67px;
+						left: 65%;
+						top: 33.33px;
+						position: absolute;
+						text-align: right;
+						color: black;
+						font-size: 10px;
+						font-family: Pretendard;
+						font-weight: 600;
+						word-wrap: break-word;
+					"
+				>
+					서울시 성동구 마장동
+				</div>
+				<div
+					class="19"
+					style="
+						width: 234.97px;
+						height: 38.33px;
+						left: 16.09px;
+						top: 25%;
+						position: absolute;
+						color: black;
+						font-size: 20px;
+						font-family: Pretendard;
+						font-weight: 700;
+						word-wrap: break-word;
+					"
+				>
+					마조로 19길
+				</div>
+			</div>
+			<div class="details" style="background-color: #fff">
+				<svg
+					width="28"
+					height="27"
+					viewBox="0 0 28 27"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M13.9614 13.6667C12.1014 13.6667 10.5093 13.0139 9.18478 11.7083C7.86031 10.4028 7.19807 8.83333 7.19807 6.99999C7.19807 5.16666 7.86031 3.59722 9.18478 2.29166C10.5093 0.986106 12.1014 0.333328 13.9614 0.333328C15.8213 0.333328 17.4134 0.986106 18.7379 2.29166C20.0624 3.59722 20.7246 5.16666 20.7246 6.99999C20.7246 8.83333 20.0624 10.4028 18.7379 11.7083C17.4134 13.0139 15.8213 13.6667 13.9614 13.6667ZM0.434784 27V22.3333C0.434784 21.3889 0.681644 20.5206 1.17536 19.7283C1.66908 18.9361 2.32399 18.3322 3.1401 17.9167C4.88728 17.0556 6.66264 16.4094 8.46618 15.9783C10.2697 15.5472 12.1014 15.3322 13.9614 15.3333C15.8213 15.3333 17.653 15.5489 19.4565 15.98C21.2601 16.4111 23.0354 17.0567 24.7826 17.9167C25.5998 18.3333 26.2553 18.9378 26.749 19.73C27.2428 20.5222 27.489 21.39 27.4879 22.3333V27H0.434784Z"
+						fill="#F24E1E"
+					/>
+				</svg>
+			</div>
+		</div>
+		<script>
+			const closeOverlay = () => {
+				window.parent.postMessage(
+					window.location.pathname.split("/").pop(),
+					"*"
+				);
+			};
+		</script>
+	</body>
+</html>
