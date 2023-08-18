@@ -7,8 +7,7 @@ load_dotenv('.env')
 
 @app.route('/')
 def index():
-    jsonURL = url_for('static', filename='data.json')
-    return render_template('index.html', apiKey=os.getenv('KAKAO_API_KEY'), jsonURL=jsonURL)
+    return render_template('index.html', apiKey=os.getenv('KAKAO_API_KEY'))
 
 @app.route('/drawing')
 def drawing():
