@@ -32,6 +32,11 @@
 			type="text/javascript"
 			src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"
 		></script>
+
+		<link
+			rel="shortcut icon"
+			href="{{ url_for('static', filename='favicon.ico') }}"
+		/>
 	</head>
 	<body>
 		<div class="mapWrap">
