@@ -44,7 +44,7 @@
 				// 지도에 그려진 도형이 있다면 모두 지웁니다
 				removeOverlays();
 
-				fetch("{{ url_for('static', filename='data.json') }}")
+				fetch("/static/data.json")
 					.then((response) => response.json())
 					.then((data) => {
 						console.log(data);
