@@ -31,7 +31,7 @@
 						37.55930390626646,
 						127.04323445018552
 					), // 지도의 중심좌표
-					level: 3, // 지도의 확대 레벨
+					level: 2, // 지도의 확대 레벨
 				};
 
 			// 지도 div와 지도 옵션으로 지도를 생성합니다
@@ -82,10 +82,7 @@
 						zIndex: markers[i].zIndex,
 					});
 
-					let content =
-						"<iframe src='/overlay/" +
-						i +
-						"' style='width: 300px; height: 200px; margin: 0; border: none;'></iframe>";
+					let content = `<iframe src='/overlay/${i}' style='width: 300px; height: 200px; margin: 0; border: none;'></iframe>`;
 
 					let overlay = new kakao.maps.CustomOverlay({
 						content: content,
