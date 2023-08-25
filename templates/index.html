@@ -49,7 +49,7 @@
 				// 지도에 그려진 도형이 있다면 모두 지웁니다
 				removeOverlays();
 
-				fetch("/static/2023-08-26_00-01-30.json")
+				fetch("/api/data")
 					.then((response) => response.json())
 					.then((data) => {
 						console.log(data);
