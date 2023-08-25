@@ -49,15 +49,15 @@
 				// 지도에 그려진 도형이 있다면 모두 지웁니다
 				removeOverlays();
 
-				fetch("/static/data.json")
+				fetch("/static/2023-08-26_00-01-30.json")
 					.then((response) => response.json())
 					.then((data) => {
 						console.log(data);
 						// 지도에 가져온 데이터로 도형들을 그립니다
-						drawMarker(data[kakao.maps.drawing.OverlayType.MARKER]);
 						drawPolyline(
 							data[kakao.maps.drawing.OverlayType.POLYLINE]
 						);
+						drawMarker(data[kakao.maps.drawing.OverlayType.MARKER]);
 						console.log(overlays);
 					})
 					.catch((error) =>
