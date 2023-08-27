@@ -1,13 +1,15 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 from dotenv import load_dotenv
 import os
 import json
+from natsort import natsorted
 
 app = Flask(__name__)
 load_dotenv('.env')
 
 APIKEY = os.getenv('KAKAO_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
+imageFolder = os.getenv('IMAGE_FOLDER_PATH')
 
 @app.route('/')
 def index():
@@ -37,6 +39,16 @@ def data():
         return jsonify(jsonData)
     else:
         return "No JSON files found"
+
+@app.route('/api/image/<int:index>')
+def image(index):
+    imageFiles = natsorted([f for f in os.listdir(imageFolder)])
+
+    try:
+        image = os.path.join(imageFolder, imageFiles[index])
+        return send_file(image, mimetype='image/jpeg')
+    except:
+        return "No image found"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
