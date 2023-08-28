@@ -87,7 +87,9 @@
 						zIndex: markers[i].zIndex,
 					});
 
-					let content = `<iframe src='/overlay/${i}' style='width: 300px; height: 200px; margin: 0; border: none;'></iframe><img src='/api/image/${i}' alt='Image' style='width: 300px; height: auto;'/>`;
+					let index = markers[i].index;
+
+					let content = `<iframe src='/overlay/${index}/${i}' style='width: 300px; height: 200px; margin: 0; border: none;'></iframe><img src='/api/image/${index}' alt='Image' style='width: 300px; height: auto;'/>`;
 
 					let overlay = new kakao.maps.CustomOverlay({
 						content: content,
