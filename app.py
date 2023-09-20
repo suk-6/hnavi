@@ -39,10 +39,8 @@ def detect(index):
 
 @app.route('/api/image/<int:index>')
 def image(index):
-    imageFiles = natsorted([f for f in os.listdir(imageFolder)])
-
     try:
-        image = os.path.join(imageFolder, imageFiles[index])
+        image = os.path.join(imageFolder, f"{index}.jpg")
         return send_file(image, mimetype='image/jpeg')
     except:
         return "No image found"
