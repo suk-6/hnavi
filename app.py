@@ -10,6 +10,7 @@ load_dotenv('.env')
 APIKEY = os.getenv('KAKAO_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
 imageFolder = os.getenv('IMAGE_FOLDER_PATH')
+release = os.getenv('RELEASE_TYPE')
 
 jsonData = {}
 
@@ -47,15 +48,20 @@ def image(index):
 
 def loadJSON():
     global jsonData
-    jsonFiles = [f for f in os.listdir(jsonFolder) if f.endswith('.json')]
-    jsonFiles.sort(key=lambda x: os.path.getmtime(os.path.join(jsonFolder, x)), reverse=True)
-
-    if jsonFiles:
-        latestJson = os.path.join(jsonFolder, jsonFiles[0])
-
-        # JSON 파일 내용 읽어오기
-        with open(latestJson, "r") as jsonFile:
+    if release == "prod":
+        with open(os.path.join(jsonFolder, "data.json"), "r") as jsonFile:
             jsonData = json.load(jsonFile)
+
+    elif release == "dev":
+        jsonFiles = [f for f in os.listdir(jsonFolder) if f.endswith('.json')]
+        jsonFiles.sort(key=lambda x: os.path.getmtime(os.path.join(jsonFolder, x)), reverse=True)
+
+        if jsonFiles:
+            latestJson = os.path.join(jsonFolder, jsonFiles[0])
+
+            # JSON 파일 내용 읽어오기
+            with open(latestJson, "r") as jsonFile:
+                jsonData = json.load(jsonFile)
 
 if __name__ == '__main__':
     loadJSON()
