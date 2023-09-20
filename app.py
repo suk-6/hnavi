@@ -12,6 +12,8 @@ jsonFolder = os.getenv('JSON_FOLDER_PATH')
 imageFolder = os.getenv('IMAGE_FOLDER_PATH')
 release = os.getenv('RELEASE_TYPE')
 
+print(jsonFolder, imageFolder, release)
+
 jsonData = {}
 
 @app.route('/')
