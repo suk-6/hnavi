@@ -15,6 +15,7 @@ release = os.getenv('RELEASE_TYPE')
 print(jsonFolder, imageFolder, release)
 
 jsonData = {}
+group = {}
 
 @app.route('/')
 def index():
@@ -26,7 +27,22 @@ def drawing():
 
 @app.route('/overlay/<int:index>/<int:i>')
 def overlay(index, i):
-    return render_template('overlay.html', index=index)
+    marker = group[index]
+
+    detection = marker.get("detection", {})
+
+    person = detection.get("0", 0)
+    car = detection.get("2", 0)
+    motorcycle = detection.get("3", 0) + detection.get("88", 0) + detection.get("1", 0)
+    
+    return render_template(
+        'overlay.html', 
+        index=marker["index"], 
+        congestion=marker["congestion"],
+        person=person,
+        car=car,
+        motorcycle=motorcycle,
+        )
 
 @app.route('/api/data')
 def data():
@@ -54,7 +70,7 @@ def loadJSON():
         with open(os.path.join(jsonFolder, "data.json"), "r") as jsonFile:
             jsonData = json.load(jsonFile)
 
-    elif release == "dev":
+    else:
         jsonFiles = [f for f in os.listdir(jsonFolder) if f.endswith('.json')]
         jsonFiles.sort(key=lambda x: os.path.getmtime(os.path.join(jsonFolder, x)), reverse=True)
 
@@ -64,6 +80,9 @@ def loadJSON():
             # JSON 파일 내용 읽어오기
             with open(latestJson, "r") as jsonFile:
                 jsonData = json.load(jsonFile)
+
+    for marker in jsonData["marker"]:
+        group[marker["index"]] = marker
 
 if __name__ == '__main__':
     loadJSON()
