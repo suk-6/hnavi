@@ -10,8 +10,6 @@
 		<base href="/" />
 		<link rel="manifest" href="/manifest.json" />
 		<link rel="shortcut icon" href="/favicon.ico" />
-		<link href="/static/css/2.86aa6515.chunk.css" rel="stylesheet" />
-		<link href="/static/css/main.a583af82.chunk.css" rel="stylesheet" />
 		<!--highlight.js cdn-->
 		<link
 			rel="stylesheet"
@@ -30,7 +28,6 @@
 			type="text/javascript"
 			src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"
 		></script>
-		<script src="kakaoMapsJavaScriptAPIwrapper.js"></script>
 
 		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 		<link
@@ -38,7 +35,6 @@
 			rel="stylesheet"
 		/>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.js"></script>
-		<script src="/toastrWrapper.js"></script>
 
 		<style>
 			.map_wrap,
@@ -283,7 +279,7 @@
 						if (keyword === "왕십리역") {
 							setTimeout(() => {
 								window.location.href = "{{ url_for('wang') }}";
-							}, 2000);
+							}, 1000);
 						} else {
 							// 다른 경우에는 아무 작업도 하지 않습니다.
 							// 이 부분을 원하는 동작으로 수정할 수 있습니다.
@@ -295,10 +291,10 @@
 				var mapContainer = document.getElementById("map"), // 지도를 표시할 div
 					mapOption = {
 						center: new kakao.maps.LatLng(
-							37.552987017,
-							126.972591728
+							37.556147, 
+                            127.044351
 						), // 지도의 중심좌표
-						level: 3, // 지도의 확대 레벨
+						level: 6, // 지도의 확대 레벨
 					};
 
 				// 지도를 생성합니다
@@ -311,7 +307,7 @@
 				var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
 
 				// 키워드로 장소를 검색합니다
-				searchPlaces();
+				// searchPlaces();
 
 				// 키워드 검색을 요청하는 함수입니다
 				function searchPlaces() {
@@ -366,8 +362,8 @@
 								places[i].y,
 								places[i].x
 							),
-							marker = addMarker(placePosition, i),
-							itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
+                        marker = addMarker(placePosition, i),
+                        itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
 
 						// 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
 						// LatLngBounds 객체에 좌표를 추가합니다
@@ -376,7 +372,7 @@
 						// 마커와 검색결과 항목에 mouseover 했을때
 						// 해당 장소에 인포윈도우에 장소명을 표시합니다
 						// mouseout 했을 때는 인포윈도우를 닫습니다
-						(function (marker, title) {
+						(function (marker, title, address) {
 							kakao.maps.event.addListener(
 								marker,
 								"mouseover",
@@ -397,60 +393,12 @@
 							kakao.maps.event.addListener(
 								marker,
 								"click",
-								function () {
-									var detailAddr;
-									// HTML5의 geolocaiton으로 사용할 수 있는지 확인합니다.
-									if (navigator.geolocation) {
-										// GeoLocation을 이용해서 접속 위치를 얻어옵니다.
-										navigator.geolocation.getCurrentPosition(
-											function (position) {
-												var lat =
-														position.coords
-															.latitude, // 위도
-													lon =
-														position.coords
-															.longitude; // 경도
-
-												var locPostion =
-														new kakao.maps.LatLng(
-															lat,
-															lon
-														), //마커가 표시될 위치를 geolocation 좌표로 생성합니다.
-													message =
-														'<div style="padding:5px;">여기에 계신가요?!</div>'; // 인포윈도우에 표시될 내용입니다.
-
-												// 주소-좌표 변환 객체를 생성합니다
-
-												searchDetailAddrFromCoords(
-													locPostion,
-													function (result, status) {
-														if (
-															status ===
-															kakao.maps.services
-																.Status.OK
-														) {
-															detailAddr =
-																!!result[0]
-																	.road_address
-																	? result[0]
-																			.road_address
-																			.address_name
-																	: result[0]
-																			.address
-																			.address_name;
-
-															location.href =
-																"https://map.kakao.com/?sName=" +
-																detailAddr +
-																"&eName=" +
-																title;
-														}
-													}
-												);
-											}
-										);
+								() => {
+                                    location.href =
+                                        "https://map.kakao.com/?sName=서울%20성동구%20왕십리로%20236-1" +
+                                        "&eName=" +
+                                        address;
 									}
-								}
 							);
 
 							itemEl.onmouseover = function () {
@@ -460,7 +408,7 @@
 							itemEl.onmouseout = function () {
 								infowindow.close();
 							};
-						})(marker, places[i].place_name);
+						})(marker, places[i].place_name, places[i].address_name);
 
 						fragment.appendChild(itemEl);
 					}
