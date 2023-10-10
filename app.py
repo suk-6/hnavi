@@ -1,24 +1,28 @@
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request, redirect, url_for
 from dotenv import load_dotenv
 import os
 import json
-from natsort import natsorted
+# from natsort import natsorted
 
 app = Flask(__name__)
-load_dotenv('.env')
+load_dotenv(dotenv_path='.env', override=True)
 
 APIKEY = os.getenv('KAKAO_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
 imageFolder = os.getenv('IMAGE_FOLDER_PATH')
 release = os.getenv('RELEASE_TYPE')
 
-print(jsonFolder, imageFolder, release)
+print(APIKEY, jsonFolder, imageFolder, release)
 
 jsonData = {}
 group = {}
 
 @app.route('/')
 def index():
+    return render_template('directions.html', apiKey=APIKEY)
+
+@app.route('/wang')
+def wang():
     return render_template('index.html', apiKey=APIKEY)
 
 @app.route('/drawing')
