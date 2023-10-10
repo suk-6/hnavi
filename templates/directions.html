@@ -290,10 +290,7 @@
 
 				var mapContainer = document.getElementById("map"), // 지도를 표시할 div
 					mapOption = {
-						center: new kakao.maps.LatLng(
-							37.556147, 
-                            127.044351
-						), // 지도의 중심좌표
+						center: new kakao.maps.LatLng(37.556147, 127.044351), // 지도의 중심좌표
 						level: 6, // 지도의 확대 레벨
 					};
 
@@ -362,8 +359,8 @@
 								places[i].y,
 								places[i].x
 							),
-                        marker = addMarker(placePosition, i),
-                        itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
+							marker = addMarker(placePosition, i),
+							itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element를 생성합니다
 
 						// 검색된 장소 위치를 기준으로 지도 범위를 재설정하기위해
 						// LatLngBounds 객체에 좌표를 추가합니다
@@ -372,7 +369,7 @@
 						// 마커와 검색결과 항목에 mouseover 했을때
 						// 해당 장소에 인포윈도우에 장소명을 표시합니다
 						// mouseout 했을 때는 인포윈도우를 닫습니다
-						(function (marker, title, address) {
+						((marker, title, address) => {
 							kakao.maps.event.addListener(
 								marker,
 								"mouseover",
@@ -394,11 +391,11 @@
 								marker,
 								"click",
 								() => {
-                                    location.href =
-                                        "https://map.kakao.com/?sName=서울%20성동구%20왕십리로%20236-1" +
-                                        "&eName=" +
-                                        address;
-									}
+									location.href =
+										"https://map.kakao.com/?sName=서울%20성동구%20왕십리로%20236-1" +
+										"&eName=" +
+										address;
+								}
 							);
 
 							itemEl.onmouseover = function () {
@@ -408,7 +405,11 @@
 							itemEl.onmouseout = function () {
 								infowindow.close();
 							};
-						})(marker, places[i].place_name, places[i].address_name);
+						})(
+							marker,
+							places[i].place_name,
+							places[i].address_name
+						);
 
 						fragment.appendChild(itemEl);
 					}
