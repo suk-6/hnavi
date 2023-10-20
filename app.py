@@ -2,20 +2,37 @@ from flask import Flask, render_template, jsonify, send_file, request, redirect,
 from dotenv import load_dotenv
 import os
 import json
+from datetime import datetime
+import random
+import sqlite3
+from flask_cors import CORS
+from parse import parser
 # from natsort import natsorted
 
 app = Flask(__name__)
+CORS(app)
+
 load_dotenv(dotenv_path='.env', override=True)
+
+parser = parser()
+
+cur = sqlite3.connect('./data.sqlite').cursor()
 
 APIKEY = os.getenv('KAKAO_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
 imageFolder = os.getenv('IMAGE_FOLDER_PATH')
 release = os.getenv('RELEASE_TYPE')
+detectionURL = os.getenv('DETECTION_URL')
 
 print(APIKEY, jsonFolder, imageFolder, release)
 
 jsonData = {}
 group = {}
+
+uploadFolder = os.path.join("/tmp", "upload")
+
+if not os.path.exists(uploadFolder):
+    os.makedirs(uploadFolder)
 
 @app.route('/')
 def index():
@@ -28,6 +45,34 @@ def wang():
 @app.route('/drawing')
 def drawing():
     return render_template('drawing.html', apiKey=APIKEY)
+
+@app.route('/upload', methods=["get"])
+def upload():
+    return render_template('upload.html')
+
+@app.route("/upload", methods=["post"])
+def upload_endpoint():
+    timestamp = datetime.now().timestamp()
+    linename = f"{timestamp}.{random.randint(0, 1000000)}"
+    filename = f"{linename}.mp4"
+    savePath = os.path.join(uploadFolder, filename)
+
+    f = request.files["file"]
+
+    if f.filename.lower().endswith(".mp4"):
+        print(f.filename, savePath)
+        f.save(savePath)
+
+        points, lineLength, congestion = parser.parse(savePath, detectionURL)
+
+        cur.execute(
+            "INSERT INTO polyline (linename, timestamp, videoname, congestion, lineLength, points) VALUES (?, ?)", \
+                (linename, timestamp, filename, congestion, lineLength, points)
+            )
+    else:
+        return "Invalid file type", 400
+
+    return "Success", 200
 
 @app.route('/overlay/<int:index>/<int:i>')
 def overlay(index, i):

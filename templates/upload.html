@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+
+		<link
+			href="https://releases.transloadit.com/uppy/v3.17.0/uppy.min.css"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<div id="uppy"></div>
+
+		<script type="module">
+			import {
+				Uppy,
+				Dashboard,
+				XHRUpload,
+			} from "https://releases.transloadit.com/uppy/v3.17.0/uppy.min.mjs";
+			const uppy = new Uppy();
+			uppy.use(Dashboard, { target: "#uppy", inline: true }).use(
+				XHRUpload,
+				{
+					endpoint: "/upload",
+				}
+			);
+		</script>
+	</body>
+</html>
