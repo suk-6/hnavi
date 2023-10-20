@@ -9,6 +9,14 @@
 			href="https://releases.transloadit.com/uppy/v3.17.0/uppy.min.css"
 			rel="stylesheet"
 		/>
+
+		<style>
+			body {
+				display: grid;
+				place-items: center;
+				min-height: 100dvh;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="uppy"></div>
@@ -24,6 +32,18 @@
 				XHRUpload,
 				{
 					endpoint: "/upload",
+					timeout: 300 * 1000,
+					getResponseData(responseText, response) {
+						if (response.status === 200) {
+							if (
+								confirm("Upload complete, press OK to continue")
+							) {
+								location.href = "/db";
+							}
+						} else {
+							alert(responseText);
+						}
+					},
 				}
 			);
 		</script>

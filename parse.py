@@ -6,24 +6,24 @@ from datetime import datetime
 import cv2
 import base64
 import requests
+from labels import labels, weightofObject
+from tqdm import tqdm
 
 class parser:
-    def __init__(self) -> None:
-        pass
+    def __init__(self):
+        self.midpoint = {}
 
-    def parse(self, path: str, detectionURL: str):
-        basePath = path[:-4]
-
+    def parse(self, basePath: str, detectionURL: str):
         try:
-            os.system(f"gopro2gpx -s {path} {basePath}")
+            os.system(f"gopro2gpx -s {f'{basePath}.mp4'} {basePath} > /dev/null")
         except:
             raise Exception("Is not a GoPro video file")
         
         points = self.points(basePath)
         lineLength = self.lineLength(points)
-        congestion = self.congestion(basePath, points, detectionURL)
+        congestion, allObjects = self.congestion(basePath, points, detectionURL)
 
-        return points, lineLength, congestion
+        return points, lineLength, congestion, self.midpoint, allObjects
 
     def points(self, basePath: str):
         try:
@@ -44,6 +44,8 @@ class parser:
                     longitude, latitude, _ = line.split(",")  # 세 번째 값은 무시
                     result = {"x": float(longitude), "y": float(latitude)}
                     points.append(result)
+
+            self.midpoint = points[len(points) // 2]
 
             return points
         except:
@@ -85,16 +87,55 @@ class parser:
         return lineLength
 
     def congestion(self, basePath, points, detectionURL):
-        for index, point in enumerate(points):
-            if index % 10 == 0:
+        congestion = 0
+        allObjects = {key: 0 for key in range(len(labels))}
+
+        for index, point in enumerate(tqdm(points)):
+            if index % 100 == 0:
                 frame = self.frame(point, basePath)
+
+                if frame is None:
+                    continue
+
                 detection = self.detectObjects(frame, detectionURL)
 
                 if detection is not None:
-                    raise Exception("Failed to detect objects")
+                    pass
                 
-                # TODO: Calculate congestion
+                objects = self.sumObjects(detection)
+                allObjects = self.sumAllObjects(detection, allObjects)
+                congestion += self.calcCongestion(objects)
 
+        return congestion, allObjects
+
+    def calcCongestion(self, objects):
+        congestion = 0
+
+        for object in objects.keys():
+            try:
+                weight = weightofObject[labels[int(object)]]
+            except:
+                weight = 0.1
+
+            congestion += objects[object] * weight
+
+        # return round(((congestion**2) / 10e2), 1)
+        return round(congestion, 5)
+
+    def sumObjects(self, detection):
+        objects = {key: 0 for key in range(len(labels))}
+
+        for object in detection:
+            objects[object["label"]] += 1
+
+        return objects
+
+    def sumAllObjects(self, detection, objects):
+        for object in detection:
+            objects[object["label"]] += 1
+
+        return objects
+    
     def detectObjects(self, frame, detectionURL):
         _, buffer = cv2.imencode(".jpg", frame)
         textImage = buffer.tobytes()
@@ -127,25 +168,24 @@ class parser:
             lat = float(trkpt.attrib["lat"])
             lon = float(trkpt.attrib["lon"])
 
-            try:
-                if lat == point["y"] and lon == point["x"]:
-                    print(f"Found point: {lat}, {lon} - {point['y']}, {point['x']}")
-                    trkptTime_str = trkpt.find("{http://www.topografix.com/GPX/1/1}time").text
-                    trkptTime = datetime.strptime(trkptTime_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+            if lat == point["y"] and lon == point["x"]:
+                trkptTime_str = trkpt.find("{http://www.topografix.com/GPX/1/1}time").text
+                trkptTime = datetime.strptime(trkptTime_str, "%Y-%m-%dT%H:%M:%S.%fZ")
 
-                    timeDifference = trkptTime - metaTime
-                    secondsDifference = timeDifference.total_seconds()
+                timeDifference = trkptTime - metaTime
+                secondsDifference = timeDifference.total_seconds()
 
-                    cap.set(cv2.CAP_PROP_POS_MSEC, secondsDifference * 1000)
+                cap.set(cv2.CAP_PROP_POS_MSEC, secondsDifference * 1000)
 
+                try:
                     ret, frame = cap.read()
+                except:
+                    raise Exception("Failed to read frame")
 
-                    if ret:
-                        return frame
-                    else:
-                        raise Exception("Not a valid frame")
-            except:
-                raise Exception("Failed to read frame")
+                if ret:
+                    return frame
+                else:
+                    return None
 
         # 영상 읽기 종료
         cap.release()

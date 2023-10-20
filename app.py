@@ -4,19 +4,18 @@ import os
 import json
 from datetime import datetime
 import random
-import sqlite3
+from db import conn, cur, loadDB
 from flask_cors import CORS
 from parse import parser
-# from natsort import natsorted
+import json
 
 app = Flask(__name__)
 CORS(app)
+app.config['JSON_AS_ASCII'] = False
 
 load_dotenv(dotenv_path='.env', override=True)
 
 parser = parser()
-
-cur = sqlite3.connect('./data.sqlite').cursor()
 
 APIKEY = os.getenv('KAKAO_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
@@ -29,6 +28,7 @@ print(APIKEY, jsonFolder, imageFolder, release)
 jsonData = {}
 group = {}
 
+dbData = loadDB()
 uploadFolder = os.path.join("/tmp", "upload")
 
 if not os.path.exists(uploadFolder):
@@ -40,7 +40,11 @@ def index():
 
 @app.route('/wang')
 def wang():
-    return render_template('index.html', apiKey=APIKEY)
+    return render_template('index.html', apiKey=APIKEY, APIURL="/api/data")
+
+@app.route('/db')
+def dbrender():
+    return render_template('index.html', apiKey=APIKEY, APIURL="/api/dbdata")
 
 @app.route('/drawing')
 def drawing():
@@ -52,27 +56,46 @@ def upload():
 
 @app.route("/upload", methods=["post"])
 def upload_endpoint():
+    global dbData
+
     timestamp = datetime.now().timestamp()
     linename = f"{timestamp}.{random.randint(0, 1000000)}"
-    filename = f"{linename}.mp4"
-    savePath = os.path.join(uploadFolder, filename)
+    basePath = os.path.join(uploadFolder, f"{linename}")
 
     f = request.files["file"]
 
     if f.filename.lower().endswith(".mp4"):
-        print(f.filename, savePath)
-        f.save(savePath)
+        print(f.filename, basePath)
+        f.save(f"{basePath}.mp4")
+        
+        # try:
+        points, lineLength, congestion, midpoint, allObjects = parser.parse(basePath, detectionURL)
+        # except:
+        #     return "Parsing error", 400
 
-        points, lineLength, congestion = parser.parse(savePath, detectionURL)
+        try:
+            for file in os.listdir(uploadFolder):
+                if file.startswith(f"{linename}"):
+                    os.remove(os.path.join(uploadFolder, file))
+        except:
+            pass
 
         cur.execute(
-            "INSERT INTO polyline (linename, timestamp, videoname, congestion, lineLength, points) VALUES (?, ?)", \
-                (linename, timestamp, filename, congestion, lineLength, points)
+            "INSERT INTO marker (linename, x, y) VALUES (?, ?, ?)", \
+                (linename, midpoint["x"], midpoint["y"])
             )
+
+        cur.execute(
+            "INSERT INTO polyline (linename, timestamp, videoname, congestion, lineLength, points, detection) VALUES (?, ?, ?, ?, ?, ?, ?)", \
+                (linename, timestamp, f.filename, congestion, lineLength, json.dumps(points), json.dumps(allObjects))
+            )
+        
+        conn.commit()
+        dbData = loadDB()
     else:
         return "Invalid file type", 400
 
-    return "Success", 200
+    return "OK", 200
 
 @app.route('/overlay/<int:index>/<int:i>')
 def overlay(index, i):
@@ -96,6 +119,10 @@ def overlay(index, i):
 @app.route('/api/data')
 def data():
     return jsonify(jsonData)
+
+@app.route('/api/dbdata')
+def dbdata():
+    return jsonify(dbData)
 
 @app.route('/api/detect/<int:index>')
 def detect(index):
