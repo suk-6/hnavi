@@ -8,6 +8,7 @@ from db import conn, cur, loadDB
 from flask_cors import CORS
 from parse import parser
 import json
+from rgeo import get_address
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +19,7 @@ load_dotenv(dotenv_path='.env', override=True)
 parser = parser()
 
 APIKEY = os.getenv('KAKAO_API_KEY')
+RESTAPIKEY = os.getenv('KAKAO_REST_API_KEY')
 jsonFolder = os.getenv('JSON_FOLDER_PATH')
 imageFolder = os.getenv('IMAGE_FOLDER_PATH')
 release = os.getenv('RELEASE_TYPE')
@@ -44,7 +46,7 @@ def wang():
 
 @app.route('/db')
 def dbrender():
-    return render_template('index.html', apiKey=APIKEY, APIURL="/api/dbdata")
+    return render_template('db.html', apiKey=APIKEY, APIURL="/api/dbdata")
 
 @app.route('/drawing')
 def drawing():
@@ -69,7 +71,7 @@ def upload_endpoint():
         f.save(f"{basePath}.mp4")
         
         # try:
-        points, lineLength, congestion, midpoint, allObjects = parser.parse(basePath, detectionURL)
+        points, lineLength, congestion, midpoint, allObjects, midImage = parser.parse(basePath, detectionURL)
         # except:
         #     return "Parsing error", 400
 
@@ -79,10 +81,12 @@ def upload_endpoint():
                     os.remove(os.path.join(uploadFolder, file))
         except:
             pass
+        
+        addressJson = json.dumps(get_address(midpoint["y"], midpoint["x"], RESTAPIKEY))
 
         cur.execute(
-            "INSERT INTO marker (linename, x, y) VALUES (?, ?, ?)", \
-                (linename, midpoint["x"], midpoint["y"])
+            "INSERT INTO marker (linename, x, y, base64Image, addressJson) VALUES (?, ?, ?, ?, ?)", \
+                (linename, midpoint["x"], midpoint["y"], midImage, addressJson)
             )
 
         cur.execute(
@@ -110,6 +114,44 @@ def overlay(index, i):
     return render_template(
         'overlay.html', 
         index=marker["index"], 
+        congestion=marker["congestion"],
+        person=person,
+        car=car,
+        motorcycle=motorcycle,
+        )
+
+@app.route('/overlay-db/<int:id>')
+def overlaydb(id):
+    cur.execute("SELECT * FROM marker WHERE id = ?", (id,))
+    markerData = cur.fetchone()
+
+    if markerData is None:
+        return "No marker found", 404
+    
+    marker = {
+        "id": markerData[0],
+        "linename": markerData[1],
+        "image": markerData[4],
+    }
+
+    cur.execute("SELECT * FROM polyline WHERE linename = ?", (marker["linename"],))
+    polylineData = cur.fetchone()
+
+    if polylineData is None:
+        return "No polyline found", 404
+    
+    marker["congestion"] = polylineData[5]
+    marker["detection"] = json.loads(polylineData[7])
+
+    detection = marker.get("detection", {})
+
+    person = detection.get("0", 0)
+    car = detection.get("2", 0)
+    motorcycle = detection.get("3", 0) + detection.get("88", 0) + detection.get("1", 0)
+    
+    return render_template(
+        'overlay.html', 
+        index=marker["id"], 
         congestion=marker["congestion"],
         person=person,
         car=car,

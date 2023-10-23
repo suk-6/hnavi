@@ -17,7 +17,9 @@ if not marker_exists:
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         linename TEXT NOT NULL,
         x REAL NOT NULL,
-        y REAL NOT NULL
+        y REAL NOT NULL,
+        base64Image TEXT,
+        addressJson TEXT
     )
     ''')
 
@@ -86,6 +88,8 @@ def loadDB():
             "coordinate": "wgs84",
             "zIndex": 0,
             "content": "",
+            "image": markerData[4],
+            "addressJson": json.loads(markerData[5]),
         })
 
         markerData = cur.fetchone()

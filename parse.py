@@ -21,9 +21,9 @@ class parser:
         
         points = self.points(basePath)
         lineLength = self.lineLength(points)
-        congestion, allObjects = self.congestion(basePath, points, detectionURL)
+        congestion, allObjects, midImage = self.congestion(basePath, points, detectionURL)
 
-        return points, lineLength, congestion, self.midpoint, allObjects
+        return points, lineLength, congestion, self.midpoint, allObjects, midImage
 
     def points(self, basePath: str):
         try:
@@ -118,8 +118,14 @@ class parser:
                 allObjects = self.sumAllObjects(detection, allObjects)
                 congestion += self.calcCongestion(objects)
 
+            # Save Mid Point Frame with base64
+            if index == len(points) // 2:
+                _, buffer = cv2.imencode(".jpg", frame)
+                textImage = buffer.tobytes()
+                midImage = str(base64.b64encode(textImage), "utf-8")
+
         cap.release()
-        return congestion, allObjects
+        return congestion, allObjects, midImage
 
     def calcCongestion(self, objects):
         congestion = 0
@@ -182,3 +188,5 @@ class parser:
                     return frame
                 else:
                     return None
+                
+        return None
