@@ -132,6 +132,7 @@ def overlaydb(id):
         "id": markerData[0],
         "linename": markerData[1],
         "image": markerData[4],
+        "addressJson": json.loads(markerData[5]),
     }
 
     cur.execute("SELECT * FROM polyline WHERE linename = ?", (marker["linename"],))
@@ -152,6 +153,7 @@ def overlaydb(id):
     return render_template(
         'overlay.html', 
         index=marker["id"], 
+        region_depth=marker["addressJson"]["documents"][0]["address_name"],
         congestion=marker["congestion"],
         person=person,
         car=car,
