@@ -90,9 +90,21 @@ class parser:
         congestion = 0
         allObjects = {key: 0 for key in range(len(labels))}
 
+        # Video Capture and GPX Parsing
+        cap = cv2.VideoCapture(basePath + ".mp4")
+        root = ET.parse(os.path.join(basePath + ".gpx")).getroot()
+
+        metaTime = (
+            root.find(".//{http://www.topografix.com/GPX/1/1}metadata")
+            .find("{http://www.topografix.com/GPX/1/1}time")
+            .text
+        )
+
+        metaTime = datetime.strptime(metaTime, "%Y-%m-%dT%H:%M:%S.%fZ")
+
         for index, point in enumerate(tqdm(points)):
             if index % 100 == 0:
-                frame = self.frame(point, basePath)
+                frame = self.frame(point, cap, root, metaTime)
 
                 if frame is None:
                     continue
@@ -106,6 +118,7 @@ class parser:
                 allObjects = self.sumAllObjects(detection, allObjects)
                 congestion += self.calcCongestion(objects)
 
+        cap.release()
         return congestion, allObjects
 
     def calcCongestion(self, objects):
@@ -146,24 +159,7 @@ class parser:
 
         return detection
 
-    def frame(self, point, basePath):
-        GPXPath = basePath + ".gpx"
-
-        root = ET.parse(os.path.join(GPXPath)).getroot()
-
-        metaTime_str = (
-            root.find(".//{http://www.topografix.com/GPX/1/1}metadata")
-            .find("{http://www.topografix.com/GPX/1/1}time")
-            .text
-        )
-        metaTime = datetime.strptime(metaTime_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-
-        videoPath = basePath + ".mp4"
-
-        # 영상 읽기
-        cap = cv2.VideoCapture(videoPath)
-
-        # trkseg 내의 모든 trkpt 태그 처리
+    def frame(self, point, cap, root, metaTime):
         for trkpt in root.findall(".//{http://www.topografix.com/GPX/1/1}trkpt"):
             lat = float(trkpt.attrib["lat"])
             lon = float(trkpt.attrib["lon"])
@@ -186,6 +182,3 @@ class parser:
                     return frame
                 else:
                     return None
-
-        # 영상 읽기 종료
-        cap.release()
