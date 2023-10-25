@@ -10,8 +10,8 @@ from labels import labels, weightofObject
 from tqdm import tqdm
 
 class parser:
-    def __init__(self):
-        self.midpoint = {}
+    def __init__(self) -> None:
+        pass
 
     def parse(self, basePath: str, detectionURL: str):
         try:
@@ -19,11 +19,11 @@ class parser:
         except:
             raise Exception("Is not a GoPro video file")
         
-        points = self.points(basePath)
+        points, midPoint = self.points(basePath)
         lineLength = self.lineLength(points)
-        congestion, allObjects, midImage = self.congestion(basePath, points, detectionURL)
+        congestion, allObjects, midImage = self.congestion(basePath, points, detectionURL, midPoint)
 
-        return points, lineLength, congestion, self.midpoint, allObjects, midImage
+        return points, lineLength, round(congestion, 1), midPoint, allObjects, midImage
 
     def points(self, basePath: str):
         try:
@@ -45,9 +45,9 @@ class parser:
                     result = {"x": float(longitude), "y": float(latitude)}
                     points.append(result)
 
-            self.midpoint = points[len(points) // 2]
+            midPoint = points[len(points) // 2]
 
-            return points
+            return points, midPoint
         except:
             raise Exception("Failed to parse KML file")
         
@@ -86,12 +86,15 @@ class parser:
 
         return lineLength
 
-    def congestion(self, basePath, points, detectionURL):
+    def congestion(self, basePath, points, detectionURL, midPoint):
         congestion = 0
         allObjects = {key: 0 for key in range(len(labels))}
 
         # Video Capture and GPX Parsing
         cap = cv2.VideoCapture(basePath + ".mp4")
+        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
         root = ET.parse(os.path.join(basePath + ".gpx")).getroot()
 
         metaTime = (
@@ -118,11 +121,12 @@ class parser:
                 allObjects = self.sumAllObjects(detection, allObjects)
                 congestion += self.calcCongestion(objects)
 
-            # Save Mid Point Frame with base64
-            if index == len(points) // 2:
-                _, buffer = cv2.imencode(".jpg", frame)
-                textImage = buffer.tobytes()
-                midImage = str(base64.b64encode(textImage), "utf-8")
+        # Save Mid Point Frame with base64
+        frame = self.frame(midPoint, cap, root, metaTime)
+        frame = cv2.resize(frame, (int(width / 5), int(height / 5)))
+        _, buffer = cv2.imencode(".jpg", frame)
+        textImage = buffer.tobytes()
+        midImage = str(base64.b64encode(textImage), "utf-8")
 
         cap.release()
         return congestion, allObjects, midImage
@@ -139,7 +143,7 @@ class parser:
             congestion += objects[object] * weight
 
         # return round(((congestion**2) / 10e2), 1)
-        return round(congestion, 5)
+        return congestion
 
     def sumObjects(self, detection):
         objects = {key: 0 for key in range(len(labels))}

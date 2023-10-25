@@ -88,8 +88,9 @@
 					});
 
 					let id = markers[i].id;
+					let image = markers[i].image;
 
-					let content = `<iframe src='/overlay-db/${id}' style='width: 300px; height: 200px; margin: 0; border: none;' />`;
+					let content = `<img src='data:image/jpg;base64,${image}' /><iframe src='/overlay-db/${id}' style='width: 300px; height: 200px; margin: 0; border: none;' />`;
 
 					let overlay = new kakao.maps.CustomOverlay({
 						content: content,

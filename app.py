@@ -145,6 +145,7 @@ def overlaydb(id):
     marker["detection"] = json.loads(polylineData[7])
 
     detection = marker.get("detection", {})
+    image = marker.get("image", {})
 
     person = detection.get("0", 0)
     car = detection.get("2", 0)
@@ -155,6 +156,7 @@ def overlaydb(id):
         index=marker["id"], 
         region_depth=marker["addressJson"]["documents"][0]["address_name"],
         congestion=marker["congestion"],
+        image=image,
         person=person,
         car=car,
         motorcycle=motorcycle,
