@@ -1,5 +1,8 @@
 FROM python:3.10
 
+RUN apt update
+RUN apt install -y libgl1-mesa-glx
+
 WORKDIR /app
 COPY . /app
 
