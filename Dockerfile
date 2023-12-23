@@ -1,7 +1,7 @@
 FROM python:3.10
 
 RUN apt update
-RUN apt install -y libgl1-mesa-glx
+RUN apt install -y libgl1-mesa-glx ffmpeg
 
 WORKDIR /app
 COPY . /app
