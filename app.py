@@ -8,7 +8,6 @@ from db import conn, cur, loadDB
 from flask_cors import CORS
 from parse import parser
 import json
-from rgeo import get_address
 
 app = Flask(__name__)
 CORS(app)
@@ -19,13 +18,7 @@ load_dotenv(dotenv_path=".env", override=True)
 parser = parser()
 
 APIKEY = os.getenv("KAKAO_API_KEY")
-RESTAPIKEY = os.getenv("KAKAO_REST_API_KEY")
-jsonFolder = os.getenv("JSON_FOLDER_PATH")
-imageFolder = os.getenv("IMAGE_FOLDER_PATH")
-release = os.getenv("RELEASE_TYPE")
 detectionURL = os.getenv("DETECTION_URL")
-
-print(APIKEY, jsonFolder, imageFolder, release)
 
 jsonData = {}
 group = {}
@@ -41,11 +34,6 @@ if not os.path.exists(uploadFolder):
 def index():
     # return render_template("directions.html", apiKey=APIKEY)
     return redirect(url_for("upload"))
-
-
-@app.route("/wang")
-def wang():
-    return render_template("index.html", apiKey=APIKEY, APIURL="/api/data")
 
 
 @app.route("/db")
@@ -101,6 +89,7 @@ def upload_endpoint():
 
         for road in roads:
             roadName = roads[road]["name"]
+            region = roads[road]["region"]
             points = roads[road]["points"]
             lineLength = roads[road]["length"]
             congestion = roads[road]["congestion"]
@@ -108,27 +97,24 @@ def upload_endpoint():
             midImage = roads[road]["midImage"]
             midPoint = roads[road]["midPoint"]
 
-            addressJson = json.dumps(
-                get_address(midPoint["y"], midPoint["x"], RESTAPIKEY)
-            )
-
             cur.execute(
-                "INSERT INTO marker (videoSN, roadName, x, y, base64Image, addressJson) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO marker (videoSN, roadName, region, x, y, base64Image) VALUES (?, ?, ?, ?, ?, ?)",
                 (
                     videoSN,
                     roadName,
+                    region,
                     midPoint["x"],
                     midPoint["y"],
                     midImage,
-                    addressJson,
                 ),
             )
 
             cur.execute(
-                "INSERT INTO polyline (videoSN, roadName, timestamp, videoname, congestion, lineLength, points, detection) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO polyline (videoSN, roadName, region, timestamp, videoname, congestion, lineLength, points, detection) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     videoSN,
                     roadName,
+                    region,
                     timestamp,
                     f.filename,
                     congestion,
@@ -146,26 +132,6 @@ def upload_endpoint():
     return "OK", 200
 
 
-@app.route("/overlay/<int:index>/<int:i>")
-def overlay(index, i):
-    marker = group[index]
-
-    detection = marker.get("detection", {})
-
-    person = detection.get("0", 0)
-    car = detection.get("2", 0)
-    motorcycle = detection.get("3", 0) + detection.get("88", 0) + detection.get("1", 0)
-
-    return render_template(
-        "overlay.html",
-        index=marker["index"],
-        congestion=marker["congestion"],
-        person=person,
-        car=car,
-        motorcycle=motorcycle,
-    )
-
-
 @app.route("/overlay-db/<int:id>")
 def overlaydb(id):
     cur.execute("SELECT * FROM marker WHERE id = ?", (id,))
@@ -178,8 +144,8 @@ def overlaydb(id):
         "id": markerData[0],
         "videoSN": markerData[1],
         "roadName": markerData[2],
-        "image": markerData[5],
-        "addressJson": json.loads(markerData[6]),
+        "region": markerData[3],
+        "image": markerData[6],
     }
 
     cur.execute("SELECT * FROM polyline WHERE id = ?", (marker["id"],))
@@ -188,8 +154,8 @@ def overlaydb(id):
     if polylineData is None:
         return "No polyline found", 404
 
-    marker["congestion"] = polylineData[6]
-    marker["detection"] = json.loads(polylineData[8])
+    marker["congestion"] = polylineData[7]
+    marker["detection"] = json.loads(polylineData[9])
 
     detection = marker.get("detection", {})
     image = marker.get("image", {})
@@ -201,7 +167,7 @@ def overlaydb(id):
     return render_template(
         "overlay.html",
         name=marker["roadName"],
-        region_depth=marker["addressJson"]["documents"][0]["address_name"],
+        region_depth=marker["region"],
         congestion=marker["congestion"],
         image=image,
         person=person,
@@ -210,57 +176,10 @@ def overlaydb(id):
     )
 
 
-@app.route("/api/data")
-def data():
-    return jsonify(jsonData)
-
-
 @app.route("/api/dbdata")
 def dbdata():
     return jsonify(dbData)
 
 
-@app.route("/api/detect/<int:index>")
-def detect(index):
-    for data in jsonData["marker"]:
-        if data["index"] == index:
-            return jsonify(data["detection"])
-
-    return jsonify({})
-
-
-@app.route("/api/image/<int:index>")
-def image(index):
-    try:
-        image = os.path.join(imageFolder, f"{index}.jpg")
-        return send_file(image, mimetype="image/jpeg")
-    except:
-        return "No image found"
-
-
-def loadJSON():
-    global jsonData
-    if release == "prod":
-        with open(os.path.join(jsonFolder, "data.json"), "r") as jsonFile:
-            jsonData = json.load(jsonFile)
-
-    else:
-        jsonFiles = [f for f in os.listdir(jsonFolder) if f.endswith(".json")]
-        jsonFiles.sort(
-            key=lambda x: os.path.getmtime(os.path.join(jsonFolder, x)), reverse=True
-        )
-
-        if jsonFiles:
-            latestJson = os.path.join(jsonFolder, jsonFiles[0])
-
-            # JSON 파일 내용 읽어오기
-            with open(latestJson, "r") as jsonFile:
-                jsonData = json.load(jsonFile)
-
-    for marker in jsonData["marker"]:
-        group[marker["index"]] = marker
-
-
 if __name__ == "__main__":
-    loadJSON()
     app.run(host="0.0.0.0", port=10000)

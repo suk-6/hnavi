@@ -19,10 +19,10 @@ if not marker_exists:
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         videoSN TEXT NOT NULL,
         roadName TEXT NOT NULL,
+        region TEXT NOT NULL,
         x REAL NOT NULL,
         y REAL NOT NULL,
-        base64Image TEXT,
-        addressJson TEXT
+        base64Image TEXT
     )
     """
     )
@@ -34,6 +34,7 @@ if not polyline_exists:
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         videoSN TEXT NOT NULL,
         roadName TEXT NOT NULL,
+        region TEXT NOT NULL,
         points TEXT NOT NULL,
         timestamp TEXT NOT NULL,
         videoname TEXT,
@@ -66,12 +67,13 @@ def loadDB():
                 "lineID": lineData[0],
                 "videoSN": lineData[1],
                 "roadName": lineData[2],
-                "points": json.loads(lineData[3]),
-                "timestamp": lineData[4],
-                "videoname": lineData[5],
-                "congestion": lineData[6],
-                "lineLength": lineData[7],
-                "detection": json.loads(lineData[8]),
+                "region": lineData[3],
+                "points": json.loads(lineData[4]),
+                "timestamp": lineData[5],
+                "videoname": lineData[6],
+                "congestion": lineData[7],
+                "lineLength": lineData[8],
+                "detection": json.loads(lineData[9]),
                 "options": {
                     "strokeColor": f"#{random.randint(0, 0xFFFFFF):06x}",
                     "strokeWeight": 5,
@@ -96,13 +98,13 @@ def loadDB():
                 "id": markerData[0],
                 "videoSN": markerData[1],
                 "roadName": markerData[2],
-                "x": markerData[3],
-                "y": markerData[4],
+                "region": markerData[3],
+                "x": markerData[4],
+                "y": markerData[5],
                 "coordinate": "wgs84",
                 "zIndex": 0,
                 "content": "",
-                "image": markerData[5],
-                "addressJson": json.loads(markerData[6]),
+                "image": markerData[6],
             }
         )
 

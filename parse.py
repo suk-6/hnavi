@@ -92,6 +92,7 @@ class parser:
             if roadcd not in result.keys():
                 result[roadcd] = {
                     "name": rdata[11],
+                    "region": f"{rdata[6]} {rdata[7]} {rdata[9]}",
                     "congestion": -1,
                     "length": -1,
                     "midPoint": -1,
