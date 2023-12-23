@@ -39,7 +39,8 @@ if not os.path.exists(uploadFolder):
 
 @app.route("/")
 def index():
-    return render_template("directions.html", apiKey=APIKEY)
+    # return render_template("directions.html", apiKey=APIKEY)
+    return redirect(url_for("upload"))
 
 
 @app.route("/wang")
@@ -62,6 +63,15 @@ def upload():
     return render_template("upload.html")
 
 
+@app.route("/reset", methods=["get"])
+def reset():
+    cur.execute("DELETE FROM marker")
+    cur.execute("DELETE FROM polyline")
+    conn.commit()
+    loadDB()
+    return redirect(url_for("upload"))
+
+
 @app.route("/upload", methods=["post"])
 def upload_endpoint():
     global dbData
@@ -78,7 +88,8 @@ def upload_endpoint():
 
         try:
             roads = parser.parse(basePath, detectionURL)
-        except:
+        except Exception as e:
+            print(e)
             return "Parsing error", 400
 
         try:

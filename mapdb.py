@@ -1,6 +1,7 @@
 import os
 import os.path as osp
 import sqlite3
+import threading
 
 
 class db:
@@ -10,6 +11,7 @@ class db:
         self.db = osp.join(self.root, "db", self.dbname)
         self.conn = self.getConnection(self.db)
         self.cur = self.conn.cursor()
+        self.lock = threading.Lock()
 
     def initDB(self):
         self.cur.execute(
@@ -81,8 +83,12 @@ class db:
             raise e
 
     def getDataOfID(self, id):
-        self.cur.execute(f"SELECT * FROM juso WHERE id=?", (id,))
-        return self.cur.fetchone()
+        try:
+            self.lock.acquire(True)
+            self.cur.execute(f"SELECT * FROM juso WHERE id=?", (id,))
+            return self.cur.fetchone()
+        finally:
+            self.lock.release()
 
     def getPositions(self):
         self.cur.execute(f"SELECT id, center_x, center_y FROM juso")
