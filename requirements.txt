@@ -13,5 +13,6 @@ numpy==1.25.2
 opencv-python==4.8.0.76
 python-dotenv==1.0.0
 requests==2.31.0
+tqdm==4.66.1
 urllib3==2.0.4
 Werkzeug==2.3.6
