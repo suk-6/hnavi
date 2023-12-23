@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # YOLO 모델과 가중치 로드
 model = torch.hub.load(
-    "./", "custom", path="./models/230218.pt", source="local", force_reload=True
+    "./", "custom", path="./models/best.pt", source="local", force_reload=True
 )
 
 
