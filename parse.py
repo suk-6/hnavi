@@ -8,22 +8,106 @@ import base64
 import requests
 from labels import labels, weightofObject
 from tqdm import tqdm
+from mapdb import db
+
 
 class parser:
     def __init__(self) -> None:
-        pass
+        self.mapdb = db("seoul")
+        self.positions = self.mapdb.getPositions()
+        self.nearbyPositions = None
+        self.nearbyPositionsRenew = True
+        self.lastNearbyPosition = None
 
     def parse(self, basePath: str, detectionURL: str):
         try:
             os.system(f"gopro2gpx -s {f'{basePath}.mp4'} {basePath} > /dev/null")
         except:
             raise Exception("Is not a GoPro video file")
-        
-        points, midPoint = self.points(basePath)
-        lineLength = self.lineLength(points)
-        congestion, allObjects, midImage = self.congestion(basePath, points, detectionURL, midPoint)
 
-        return points, lineLength, round(congestion, 1), midPoint, allObjects, midImage
+        points = self.points(basePath)
+        roads = self.classificationByMapBase(points)
+        for road in roads.keys():
+            (
+                roads[road]["congestion"],
+                roads[road]["allObjects"],
+                roads[road]["midImage"],
+            ) = self.congestion(
+                basePath, roads[road]["points"], detectionURL, roads[road]["midPoint"]
+            )
+
+        return roads
+
+    def findNearby(self, lat, lon):
+        if self.nearbyPositions is not None:
+            positions = self.nearbyPositions
+        else:
+            positions = self.positions
+
+        minDist = self.haversine(
+            lat, lon, float(positions[0][2]), float(positions[0][1])
+        )
+        minID = positions[0][0]
+
+        for position in positions:
+            dist = self.haversine(lat, lon, float(position[2]), float(position[1]))
+            if dist < minDist:
+                minDist = dist
+                minID = position[0]
+
+        self.lastNearbyPosition = minID
+        return minID
+
+    def saveNearbyPositions(self, lat, lon):
+        if self.nearbyPositionsRenew:
+            self.nearbyPositions = []
+            for position in self.positions:
+                dist = self.haversine(lat, lon, float(position[2]), float(position[1]))
+                if dist < 1:
+                    self.nearbyPositions.append(position)
+
+            self.nearbyPositions.sort(
+                key=lambda x: self.haversine(lat, lon, float(x[2]), float(x[1]))
+            )
+
+            tenPercent = int(len(self.nearbyPositions) / 10)
+            self.longDistances = self.nearbyPositions[-tenPercent:]
+
+            self.nearbyPositionsRenew = False
+
+        if self.nearbyPositions is not None:
+            if self.lastNearbyPosition in [
+                position[0] for position in self.longDistances
+            ]:
+                self.nearbyPositionsRenew = True
+
+    def classificationByMapBase(self, points):
+        result = {}
+        for point in tqdm(points[::2], desc="Calculating Road Segments"):
+            rid = self.findNearby(point["y"], point["x"])
+            self.saveNearbyPositions(point["y"], point["x"])
+            rdata = self.mapdb.getDataOfID(rid)
+
+            roadcd = rdata[10]
+            if roadcd not in result.keys():
+                result[roadcd] = {
+                    "name": rdata[11],
+                    "congestion": -1,
+                    "length": -1,
+                    "midPoint": -1,
+                    "points": [],
+                }
+
+            result[roadcd]["points"].append(point)
+
+        for roadcd in result.keys():
+            result[roadcd]["length"] = self.lineLength(result[roadcd]["points"])
+            result[roadcd]["midPoint"] = self.calcMidPoint(result[roadcd]["points"])
+
+        return result
+
+    def calcMidPoint(self, points):
+        return points[int(len(points) / 2)]
 
     def points(self, basePath: str):
         try:
@@ -45,12 +129,10 @@ class parser:
                     result = {"x": float(longitude), "y": float(latitude)}
                     points.append(result)
 
-            midPoint = points[len(points) // 2]
-
-            return points, midPoint
+            return points
         except:
             raise Exception("Failed to parse KML file")
-        
+
     def haversine(self, lat1, lon1, lat2, lon2):
         radius = 6371.0
 
@@ -70,7 +152,7 @@ class parser:
         distance = radius * c
 
         return distance
-    
+
     def lineLength(self, points):
         lineLength = 0
 
@@ -116,7 +198,7 @@ class parser:
 
                 if detection is not None:
                     pass
-                
+
                 objects = self.sumObjects(detection)
                 allObjects = self.sumAllObjects(detection, allObjects)
                 congestion += self.calcCongestion(objects)
@@ -158,7 +240,7 @@ class parser:
             objects[object["label"]] += 1
 
         return objects
-    
+
     def detectObjects(self, frame, detectionURL):
         _, buffer = cv2.imencode(".jpg", frame)
         textImage = buffer.tobytes()
@@ -175,7 +257,9 @@ class parser:
             lon = float(trkpt.attrib["lon"])
 
             if lat == point["y"] and lon == point["x"]:
-                trkptTime_str = trkpt.find("{http://www.topografix.com/GPX/1/1}time").text
+                trkptTime_str = trkpt.find(
+                    "{http://www.topografix.com/GPX/1/1}time"
+                ).text
                 trkptTime = datetime.strptime(trkptTime_str, "%Y-%m-%dT%H:%M:%S.%fZ")
 
                 timeDifference = trkptTime - metaTime
@@ -192,5 +276,5 @@ class parser:
                     return frame
                 else:
                     return None
-                
+
         return None

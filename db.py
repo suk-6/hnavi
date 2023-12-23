@@ -1,7 +1,8 @@
 import sqlite3
 import json
+import random
 
-conn = sqlite3.connect('./data.sqlite', check_same_thread=False)
+conn = sqlite3.connect("./data.sqlite", check_same_thread=False)
 cur = conn.cursor()
 
 # Check if tables already exist
@@ -12,22 +13,27 @@ polyline_exists = cur.fetchone()
 
 # Create tables if they don't exist
 if not marker_exists:
-    cur.execute('''
+    cur.execute(
+        """
     CREATE TABLE marker (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        linename TEXT NOT NULL,
+        videoSN TEXT NOT NULL,
+        roadName TEXT NOT NULL,
         x REAL NOT NULL,
         y REAL NOT NULL,
         base64Image TEXT,
         addressJson TEXT
     )
-    ''')
+    """
+    )
 
 if not polyline_exists:
-    cur.execute('''
+    cur.execute(
+        """
     CREATE TABLE polyline (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        linename TEXT NOT NULL,
+        videoSN TEXT NOT NULL,
+        roadName TEXT NOT NULL,
         points TEXT NOT NULL,
         timestamp TEXT NOT NULL,
         videoname TEXT,
@@ -35,13 +41,15 @@ if not polyline_exists:
         lineLength REAL,
         detection TEXT
     )
-    ''')
+    """
+    )
 
 conn.commit()
 
+
 def loadDB():
     dbData = {}
-    
+
     cur.execute("SELECT * FROM polyline")
     lineData = cur.fetchone()
 
@@ -52,23 +60,26 @@ def loadDB():
     marker = []
 
     while lineData is not None:
-        polyline.append({
-            "type": "polyline",
-            "lineID": lineData[0],
-            "linename": lineData[1],
-            "points": json.loads(lineData[2]),
-            "timestamp": lineData[3],
-            "videoname": lineData[4],
-            "congestion": lineData[5],
-            "lineLength": lineData[6],
-            "detection": json.loads(lineData[7]),
-            "options": {
-                "strokeColor": "#808080",
-                "strokeWeight": 5,
-                "strokeStyle": "solid",
-                "strokeOpacity": 1
-            },
-        })
+        polyline.append(
+            {
+                "type": "polyline",
+                "lineID": lineData[0],
+                "videoSN": lineData[1],
+                "roadName": lineData[2],
+                "points": json.loads(lineData[3]),
+                "timestamp": lineData[4],
+                "videoname": lineData[5],
+                "congestion": lineData[6],
+                "lineLength": lineData[7],
+                "detection": json.loads(lineData[8]),
+                "options": {
+                    "strokeColor": f"#{random.randint(0, 0xFFFFFF):06x}",
+                    "strokeWeight": 5,
+                    "strokeStyle": "solid",
+                    "strokeOpacity": 1,
+                },
+            }
+        )
 
         lineData = cur.fetchone()
 
@@ -79,18 +90,21 @@ def loadDB():
         return None
 
     while markerData is not None:
-        marker.append({
-            "type": "marker",
-            "id": markerData[0],
-            "linename": markerData[1],
-            "x": markerData[2],
-            "y": markerData[3],
-            "coordinate": "wgs84",
-            "zIndex": 0,
-            "content": "",
-            "image": markerData[4],
-            "addressJson": json.loads(markerData[5]),
-        })
+        marker.append(
+            {
+                "type": "marker",
+                "id": markerData[0],
+                "videoSN": markerData[1],
+                "roadName": markerData[2],
+                "x": markerData[3],
+                "y": markerData[4],
+                "coordinate": "wgs84",
+                "zIndex": 0,
+                "content": "",
+                "image": markerData[5],
+                "addressJson": json.loads(markerData[6]),
+            }
+        )
 
         markerData = cur.fetchone()
 

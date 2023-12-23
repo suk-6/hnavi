@@ -36,7 +36,7 @@
 						37.55930390626646,
 						127.04323445018552
 					), // 지도의 중심좌표
-					level: 2, // 지도의 확대 레벨
+					level: 4, // 지도의 확대 레벨
 				};
 
 			// 지도 div와 지도 옵션으로 지도를 생성합니다
@@ -163,8 +163,40 @@
 				false
 			);
 
+			const getLocation = () => {
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(
+						(position) => {
+							let lat = position.coords.latitude;
+							let lng = position.coords.longitude;
+
+							map.setCenter(new kakao.maps.LatLng(lat, lng));
+						},
+						(error) => {
+							console.error(error);
+						}
+					);
+				} else {
+					console.error(
+						"Geolocation is not supported by this browser."
+					);
+					fetch("https://ipapi.co/json/")
+						.then((response) => response.json())
+						.then((data) => {
+							let lat = data.latitude;
+							let lng = data.longitude;
+
+							map.setCenter(new kakao.maps.LatLng(lat, lng));
+						})
+						.catch((error) =>
+							console.error("Error fetching IP Location:", error)
+						);
+				}
+			};
+
 			resizeMap();
 			getDataFromJSON();
+			getLocation();
 		</script>
 	</body>
 </html>
