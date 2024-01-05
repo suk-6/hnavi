@@ -1,169 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<style>
-			html,
-			body {
-				height: 100%;
-				margin: 0;
-				padding: 0;
-			}
-
-			#map {
-				height: 100%;
-			}
-		</style>
-
-		<script
-			type="text/javascript"
-			src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ apiKey }}&libraries=services,clusterer,drawing"
-		></script>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+			rel="stylesheet"
+		/>
+		<title>HNavi</title>
 
 		<link
 			rel="shortcut icon"
 			href="{{ url_for('static', filename='favicon.ico') }}"
 		/>
 	</head>
-
 	<body>
-		<div id="map"></div>
-
-		<script>
-			// Drawing Manager에서 데이터를 가져와 도형을 표시할 아래쪽 지도 div
-			let mapContainer = document.getElementById("map"),
-				mapOptions = {
-					center: new kakao.maps.LatLng(
-						37.55930390626646,
-						127.04323445018552
-					), // 지도의 중심좌표
-					level: 2, // 지도의 확대 레벨
-				};
-
-			// 지도 div와 지도 옵션으로 지도를 생성합니다
-			let map = new kakao.maps.Map(mapContainer, mapOptions),
-				overlays = [], // 지도에 그려진 도형, 마커를 담을 배열
-				overlayMarkers = []; // 지도에 그려진 마커 오버레이를 담을 배열
-
-			// Drawing Manager로 그려진 객체 데이터를 가져와 아래 지도에 표시합니다
-			const getDataFromJSON = () => {
-				// 지도에 그려진 도형이 있다면 모두 지웁니다
-				removeOverlays();
-
-				fetch("{{ APIURL }}")
-					.then((response) => response.json())
-					.then((data) => {
-						console.log(data);
-						// 지도에 가져온 데이터로 도형들을 그립니다
-						drawPolyline(
-							data[kakao.maps.drawing.OverlayType.POLYLINE]
-						);
-						drawMarker(data[kakao.maps.drawing.OverlayType.MARKER]);
-						console.log(overlays);
-					})
-					.catch((error) =>
-						console.error("Error fetching JSON:", error)
-					);
-			};
-
-			// 아래 지도에 그려진 도형이 있다면 모두 지웁니다
-			const removeOverlays = () => {
-				for (let i = 0; i < overlays.length; i++) {
-					overlays[i].setMap(null);
-				}
-
-				overlays = [];
-				overlayMarkers = [];
-			};
-
-			// Drawing Manager에서 가져온 데이터 중 마커를 아래 지도에 표시하는 함수입니다
-			const drawMarker = (markers) => {
-				for (let i = 0; i < markers.length; i++) {
-					let marker = new kakao.maps.Marker({
-						map: map,
-						position: new kakao.maps.LatLng(
-							markers[i].y,
-							markers[i].x
-						),
-						zIndex: markers[i].zIndex,
-					});
-
-					let index = markers[i].index;
-
-					let content = `<iframe src='/overlay/${index}/${i}' style='width: 300px; height: 200px; margin: 0; border: none;'></iframe><img src='/api/image/${index}' alt='Image' style='width: 300px; height: auto;'/>`;
-
-					let overlay = new kakao.maps.CustomOverlay({
-						content: content,
-						map: null,
-						position: marker.getPosition(),
-					});
-
-					kakao.maps.event.addListener(marker, "click", () => {
-						overlay.setMap(map);
-					});
-
-					overlays.push(marker);
-					overlayMarkers.push(overlay);
-				}
-			};
-
-			// Drawing Manager에서 가져온 데이터 중 선을 아래 지도에 표시하는 함수입니다
-			const drawPolyline = (lines) => {
-				for (let i = 0; i < lines.length; i++) {
-					let style = lines[i].options;
-					let polyline = new kakao.maps.Polyline({
-						map: map,
-						path: pointsToPath(lines[i].points),
-						strokeColor: style.strokeColor,
-						strokeOpacity: style.strokeOpacity,
-						strokeStyle: style.strokeStyle,
-						strokeWeight: style.strokeWeight,
-					});
-
-					overlays.push(polyline);
-				}
-			};
-
-			// Drawing Manager에서 가져온 데이터 중
-			// 선과 다각형의 꼭지점 정보를 kakao.maps.LatLng객체로 생성하고 배열로 반환하는 함수입니다
-			const pointsToPath = (points) => {
-				let path = [];
-
-				for (let i = 0; i < points.length; i++) {
-					let latlng = new kakao.maps.LatLng(
-						points[i].y,
-						points[i].x
-					);
-
-					path.push(latlng);
-				}
-
-				return path;
-			};
-
-			// 페이지 크기 변경 시 지도 크기 변경
-			const resizeMap = () => {
-				let mapContainer = document.getElementById("map");
-				mapContainer.style.height = window.innerHeight + "px";
-			};
-
-			window.onresize = () => {
-				resizeMap();
-			};
-
-			const closeOverlay = (index) => {
-				overlayMarkers[index].setMap(null);
-			};
-
-			window.addEventListener(
-				"message",
-				(e) => {
-					closeOverlay(e.data);
-				},
-				false
-			);
-
-			resizeMap();
-			getDataFromJSON();
-		</script>
+		<!--
+// v0 by Vercel.
+// https://v0.dev/t/m14MPor4I2z
+-->
+		<div
+			class="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900"
+		>
+			<div class="grid grid-cols-3 gap-8 w-full max-w-4xl p-4">
+				<a
+					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
+					href="{{ url_for('map') }}"
+					><img
+						src="{{ url_for('static', filename='img/map.png') }}"
+						alt="Map"
+						class="w-24 h-24 mb-4"
+						width="100"
+						height="100"
+						style="aspect-ratio: 100 / 100; object-fit: cover"
+					/>
+					<h2 class="text-lg font-semibold">지도</h2>
+					<p class="text-sm text-gray-500 dark:text-gray-400">
+						길찾기 기능을 사용합니다.
+					</p></a
+				><a
+					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
+					href="{{ url_for('upload') }}"
+					><img
+						src="{{ url_for('static', filename='img/upload.png') }}"
+						alt="Upload"
+						class="w-24 h-24 mb-4"
+						width="100"
+						height="100"
+						style="aspect-ratio: 100 / 100; object-fit: cover"
+					/>
+					<h2 class="text-lg font-semibold">업로드</h2>
+					<p class="text-sm text-gray-500 dark:text-gray-400">
+						GoPro 영상 파일을 업로드합니다.
+					</p></a
+				><a
+					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
+					href="{{ url_for('dbview') }}"
+					><img
+						src="{{ url_for('static', filename='img/db.png') }}"
+						alt="DB"
+						class="w-24 h-24 mb-4"
+						width="100"
+						height="100"
+						style="aspect-ratio: 100 / 100; object-fit: cover"
+					/>
+					<h2 class="text-lg font-semibold">데이터베이스</h2>
+					<p class="text-sm text-gray-500 dark:text-gray-400">
+						DB에 저장된 데이터를 확인합니다.
+					</p></a
+				>
+			</div>
+		</div>
 	</body>
 </html>

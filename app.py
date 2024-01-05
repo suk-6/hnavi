@@ -32,13 +32,22 @@ if not os.path.exists(uploadFolder):
 
 @app.route("/")
 def index():
-    # return render_template("directions.html", apiKey=APIKEY)
-    return redirect(url_for("upload"))
+    return render_template("index.html")
+
+
+@app.route("/map")
+def map():
+    return render_template("directions.html", apiKey=APIKEY)
 
 
 @app.route("/db")
 def dbrender():
     return render_template("db.html", apiKey=APIKEY, APIURL="/api/dbdata")
+
+
+@app.route("/db-view")
+def dbview():
+    return render_template("db-view.html", APIURL="/api/dbdata")
 
 
 @app.route("/drawing")

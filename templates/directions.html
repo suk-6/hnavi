@@ -278,7 +278,8 @@
 						// 만약 키워드가 "왕십리역"이라면 리다이렉트를 수행합니다.
 						if (keyword === "왕십리역") {
 							setTimeout(() => {
-								window.location.href = "{{ url_for('wang') }}";
+								window.location.href =
+									"{{ url_for('dbrender') }}";
 							}, 1000);
 						} else {
 							// 다른 경우에는 아무 작업도 하지 않습니다.

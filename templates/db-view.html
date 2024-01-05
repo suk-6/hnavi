@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			* {
+				text-align: center;
+			}
+
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			.flex-center {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				min-height: 100vh;
+			}
+		</style>
+
+		<link
+			rel="shortcut icon"
+			href="{{ url_for('static', filename='favicon.ico') }}"
+		/>
+		<link
+			href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+			rel="stylesheet"
+		/>
+	</head>
+	<body class="flex-center">
+		<table
+			id="dbdata"
+			class="table-auto border-collapse shadow-lg bg-white"
+		>
+			<thead>
+				<tr>
+					<th class="bg-blue-100 border px-8 py-4">도로명</th>
+					<th class="bg-blue-100 border px-8 py-4">지역</th>
+					<th class="bg-blue-100 border px-8 py-4">혼잡도</th>
+					<th class="bg-blue-100 border px-8 py-4">길이</th>
+					<th class="bg-blue-100 border px-8 py-4">파일 이름</th>
+					<th class="bg-blue-100 border px-8 py-4">좌표</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
+		<script>
+			const getDataFromJSON = () => {
+				fetch("{{ APIURL }}")
+					.then((response) => response.json())
+					.then((data) => {
+						console.log(data);
+
+						const polyline = data.polyline;
+						const table = document.getElementById("dbdata");
+						const tableBody =
+							table.getElementsByTagName("tbody")[0];
+
+						for (let i = 0; i < polyline.length; i++) {
+							const row = tableBody.insertRow(i);
+
+							const roadName = row.insertCell(0);
+							const region = row.insertCell(1);
+							const congestion = row.insertCell(2);
+							const lineLength = row.insertCell(3);
+							const videoName = row.insertCell(4);
+							const coordinates = row.insertCell(5);
+
+							roadName.className = "border px-8 py-4";
+							region.className = "border px-8 py-4";
+							congestion.className = "border px-8 py-4";
+							lineLength.className = "border px-8 py-4";
+							videoName.className = "border px-8 py-4";
+							coordinates.className = "border px-8 py-4";
+
+							roadName.innerHTML = polyline[i].roadName;
+							region.innerHTML = polyline[i].region;
+							congestion.innerHTML = `${polyline[i].congestion}%`;
+							lineLength.innerHTML = `${
+								Math.ceil(polyline[i].lineLength * 1000 * 10) /
+								10
+							}M`;
+							videoName.innerHTML = polyline[i].videoname;
+							coordinates.innerHTML = JSON.stringify(
+								polyline[i].points[0]
+							);
+						}
+					})
+					.catch((error) =>
+						console.error("Error fetching JSON:", error)
+					);
+			};
+
+			getDataFromJSON();
+		</script>
+	</body>
+</html>
