@@ -79,7 +79,9 @@
 
 							roadName.innerHTML = polyline[i].roadName;
 							region.innerHTML = polyline[i].region;
-							congestion.innerHTML = `${polyline[i].congestion}%`;
+							congestion.innerHTML = `${
+								Math.ceil(polyline[i].congestion * 10) / 10
+							}%`;
 							lineLength.innerHTML = `${
 								Math.ceil(polyline[i].lineLength * 1000 * 10) /
 								10
