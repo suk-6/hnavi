@@ -6,5 +6,7 @@ services:
       context: .
     ports:
       - "20004:10000"
+    volumes:
+      - "./data.sqlite:/app/data.sqlite"
   prediction:
     build: ./prediction
