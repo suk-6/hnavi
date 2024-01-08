@@ -35,9 +35,19 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/en")
+def index_en():
+    return render_template("en/index.html")
+
+
 @app.route("/map")
 def map():
     return render_template("directions.html", apiKey=APIKEY)
+
+
+@app.route("/en/map")
+def map_en():
+    return render_template("en/directions.html", apiKey=APIKEY)
 
 
 @app.route("/db")
@@ -48,6 +58,11 @@ def dbrender():
 @app.route("/db-view")
 def dbview():
     return render_template("db-view.html", APIURL="/api/dbdata")
+
+
+@app.route("/en/db-view")
+def dbview_en():
+    return render_template("en/db-view.html", APIURL="/api/dbdata")
 
 
 @app.route("/drawing")

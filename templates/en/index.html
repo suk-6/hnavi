@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,14 +24,14 @@
 		>
 			<button
 				class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-				onclick="location.href='{{ url_for('index_en') }}'"
+				onclick="location.href='{{ url_for('index') }}'"
 			>
-				View in English
+				한글로 보기
 			</button>
 			<div class="grid grid-cols-3 gap-8 w-full max-w-4xl p-4">
 				<a
 					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
-					href="{{ url_for('map') }}"
+					href="{{ url_for('map_en') }}"
 					><img
 						src="{{ url_for('static', filename='img/map.png') }}"
 						alt="Map"
@@ -40,9 +40,9 @@
 						height="100"
 						style="aspect-ratio: 100 / 100; object-fit: cover"
 					/>
-					<h2 class="text-lg font-semibold">지도</h2>
+					<h2 class="text-lg font-semibold">Map</h2>
 					<p class="text-sm text-gray-500 dark:text-gray-400">
-						길찾기 기능을 사용합니다.
+						Use the directions feature.
 					</p></a
 				><a
 					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
@@ -55,13 +55,13 @@
 						height="100"
 						style="aspect-ratio: 100 / 100; object-fit: cover"
 					/>
-					<h2 class="text-lg font-semibold">업로드</h2>
+					<h2 class="text-lg font-semibold">Upload</h2>
 					<p class="text-sm text-gray-500 dark:text-gray-400">
-						GoPro 영상 파일을 업로드합니다.
+						Upload a GoPro video file.
 					</p></a
 				><a
 					class="group flex flex-col items-center justify-center p-4 rounded-lg transition-colors hover:bg-gray-200 dark:hover:bg-gray-800 shadow-2xl"
-					href="{{ url_for('dbview') }}"
+					href="{{ url_for('dbview_en') }}"
 					><img
 						src="{{ url_for('static', filename='img/db.png') }}"
 						alt="DB"
@@ -70,9 +70,9 @@
 						height="100"
 						style="aspect-ratio: 100 / 100; object-fit: cover"
 					/>
-					<h2 class="text-lg font-semibold">데이터베이스</h2>
+					<h2 class="text-lg font-semibold">Database</h2>
 					<p class="text-sm text-gray-500 dark:text-gray-400">
-						DB에 저장된 데이터를 확인합니다.
+						Check the data stored in the DB.
 					</p></a
 				>
 			</div>
