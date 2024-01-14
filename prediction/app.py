@@ -28,11 +28,15 @@ def detect():
     annos = []
 
     for bbox in zip(results.xyxy[0]):
-        _, _, _, _, conf, label = bbox[0].tolist()
+        xmin, ymin, xmax, ymax, conf, label = bbox[0].tolist()
 
-        if conf > 0.3:
+        if conf > 0.2:
             annos.append(
                 {
+                    "xmin": int(xmin),
+                    "ymin": int(ymin),
+                    "xmax": int(xmax),
+                    "ymax": int(ymax),
                     "label": int(label),
                     "confidence": float(conf),
                 }

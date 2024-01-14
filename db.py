@@ -40,7 +40,8 @@ if not polyline_exists:
         videoname TEXT,
         congestion REAL,
         lineLength REAL,
-        detection TEXT
+        detection TEXT,
+        imageIDs TEXT
     )
     """
     )
@@ -74,6 +75,7 @@ def loadDB():
                 "congestion": lineData[7],
                 "lineLength": lineData[8],
                 "detection": json.loads(lineData[9]),
+                "imageIDs": json.loads(lineData[10]),
                 "options": {
                     "strokeColor": f"#{random.randint(0, 0xFFFFFF):06x}",
                     "strokeWeight": 5,

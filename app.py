@@ -120,6 +120,7 @@ def upload_endpoint():
             allObjects = roads[road]["allObjects"]
             midImage = roads[road]["midImage"]
             midPoint = roads[road]["midPoint"]
+            imageIDs = roads[road]["imageIDs"]
 
             cur.execute(
                 "INSERT INTO marker (videoSN, roadName, region, x, y, base64Image) VALUES (?, ?, ?, ?, ?, ?)",
@@ -134,7 +135,7 @@ def upload_endpoint():
             )
 
             cur.execute(
-                "INSERT INTO polyline (videoSN, roadName, region, timestamp, videoname, congestion, lineLength, points, detection) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO polyline (videoSN, roadName, region, timestamp, videoname, congestion, lineLength, points, detection, imageIDs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     videoSN,
                     roadName,
@@ -145,6 +146,7 @@ def upload_endpoint():
                     lineLength,
                     json.dumps(points),
                     json.dumps(allObjects),
+                    json.dumps(imageIDs),
                 ),
             )
 

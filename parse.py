@@ -32,6 +32,7 @@ class parser:
                 roads[road]["congestion"],
                 roads[road]["allObjects"],
                 roads[road]["midImage"],
+                roads[road]["imageIDs"],
             ) = self.congestion(
                 basePath, roads[road]["points"], detectionURL, roads[road]["midPoint"]
             )
@@ -172,6 +173,7 @@ class parser:
     def congestion(self, basePath, points, detectionURL, midPoint):
         congestion = 0
         allObjects = {key: 0 for key in range(len(labels))}
+        imageIDs = []
 
         # Video Capture and GPX Parsing
         cap = cv2.VideoCapture(basePath + ".mp4")
@@ -189,17 +191,16 @@ class parser:
         metaTime = datetime.strptime(metaTime, "%Y-%m-%dT%H:%M:%S.%fZ")
 
         for index, point in enumerate(tqdm(points)):
-            if index % 100 == 0:
+            if index % (int(len(points) / 15)) == 0:
                 frame = self.frame(point, cap, root, metaTime)
-
                 if frame is None:
                     continue
 
-                detection = self.detectObjects(frame, detectionURL)
-
-                if detection is not None:
-                    pass
-
+                try:
+                    detection, imageID = self.detectObjects(frame, detectionURL)
+                    imageIDs.append(imageID)
+                except:
+                    detection = []
                 objects = self.sumObjects(detection)
                 allObjects = self.sumAllObjects(detection, allObjects)
                 congestion += self.calcCongestion(objects)
@@ -207,12 +208,10 @@ class parser:
         # Save Mid Point Frame with base64
         frame = self.frame(midPoint, cap, root, metaTime)
         frame = cv2.resize(frame, (int(width / 5), int(height / 5)))
-        _, buffer = cv2.imencode(".jpg", frame)
-        textImage = buffer.tobytes()
-        midImage = str(base64.b64encode(textImage), "utf-8")
+        midImage = self.frameToBase64(frame)
 
         cap.release()
-        return congestion, allObjects, midImage
+        return congestion, allObjects, midImage, imageIDs
 
     def calcCongestion(self, objects):
         congestion = 0
@@ -242,15 +241,21 @@ class parser:
 
         return objects
 
-    def detectObjects(self, frame, detectionURL):
+    def frameToBase64(self, frame):
         _, buffer = cv2.imencode(".jpg", frame)
         textImage = buffer.tobytes()
-        base64Image = str(base64.b64encode(textImage), "utf-8")
+        return str(base64.b64encode(textImage), "utf-8")
+
+    def detectObjects(self, frame, detectionURL):
+        base64Image = self.frameToBase64(frame)
 
         response = requests.post(detectionURL, data={"frame": base64Image})
         detection = response.json()
 
-        return detection
+        if detection != []:
+            return detection, self.saveDetectedFrame(frame, detection)
+
+        return None
 
     def frame(self, point, cap, root, metaTime):
         for trkpt in root.findall(".//{http://www.topografix.com/GPX/1/1}trkpt"):
@@ -279,3 +284,8 @@ class parser:
                     return None
 
         return None
+
+    def saveDetectedFrame(self, frame, detection):
+        return ""
+
+        # TODO: Save Detected Frame
