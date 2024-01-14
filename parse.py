@@ -225,7 +225,7 @@ class parser:
             congestion += objects[object] * weight
 
         # return round(((congestion**2) / 10e2), 1)
-        return congestion
+        return round(congestion, 1)
 
     def sumObjects(self, detection):
         objects = {key: 0 for key in range(len(labels))}
