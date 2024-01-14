@@ -158,7 +158,12 @@
 			window.addEventListener(
 				"message",
 				(e) => {
-					closeOverlay(e.data);
+					const data = JSON.parse(e.data);
+					if (data.type === "close") {
+						closeOverlay(data.data);
+					} else if (data.type === "detail") {
+						window.open(data.data, "_blank");
+					}
 				},
 				false
 			);

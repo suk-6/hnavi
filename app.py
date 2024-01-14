@@ -209,6 +209,7 @@ def overlaydb(id):
 
     return render_template(
         "overlay.html",
+        detailURL=f"/api/detail/{marker['id']}",
         name=marker["roadName"],
         region_depth=marker["region"],
         congestion=marker["congestion"],
@@ -222,6 +223,32 @@ def overlaydb(id):
 @app.route("/api/dbdata")
 def dbdata():
     return jsonify(dbData)
+
+
+@app.route("/api/detail/<int:id>")
+def showDetail(id):
+    return render_template("detail.html", IMAGEAPIURL=f"/api/image/{id}")
+
+
+@app.route("/api/image/<int:id>")  # polylineID
+def image(id):
+    cur.execute("SELECT imageIDs FROM polyline WHERE id = ?", (id,))
+    imageIDs = cur.fetchone()
+    if imageIDs is None:
+        return "No image found", 404
+
+    imageIDs = json.loads(imageIDs[0])
+    images = []
+
+    for imageID in imageIDs:
+        cur.execute("SELECT image FROM images WHERE id = ?", (imageID,))
+        image = cur.fetchone()
+        if image is None:
+            continue
+
+        images.append(image[0])
+
+    return jsonify(images)
 
 
 if __name__ == "__main__":

@@ -33,7 +33,9 @@
 					</div>
 				</button>
 				<div class="fullAddress">{{ region_depth }}</div>
-				<div class="Address">{{ name }}</div>
+				<a onclick="showDetail()"
+					><div class="Address">{{ name }}</div></a
+				>
 			</div>
 			<div class="Details">
 				<div class="Detail">
@@ -96,7 +98,17 @@
 		<script>
 			const closeOverlay = () => {
 				window.parent.postMessage(
-					window.location.pathname.split("/").pop(),
+					JSON.stringify({
+						type: "close",
+						data: window.location.pathname.split("/").pop(),
+					}),
+					"*"
+				);
+			};
+
+			const showDetail = () => {
+				window.parent.postMessage(
+					JSON.stringify({ type: "detail", data: "{{ detailURL }}" }),
 					"*"
 				);
 			};
