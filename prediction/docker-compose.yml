@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  prediction:
+    build:
+      context: .
+      dockerfile: Dockerfile-arm
