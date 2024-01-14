@@ -232,12 +232,18 @@ def showDetail(id):
 
 @app.route("/api/image/<int:id>")  # polylineID
 def image(id):
-    cur.execute("SELECT imageIDs FROM polyline WHERE id = ?", (id,))
-    imageIDs = cur.fetchone()
-    if imageIDs is None:
-        return "No image found", 404
+    cur.execute("SELECT imageIDs, detection FROM polyline WHERE id = ?", (id,))
+    data = cur.fetchone()
+    if data is None:
+        return "No data found", 404
 
-    imageIDs = json.loads(imageIDs[0])
+    imageIDs = data[0]
+    detection = {}
+
+    for key, value in json.loads(data[1]).items():
+        detection[labels[int(key)]] = int(value)
+
+    imageIDs = json.loads(imageIDs)
     images = []
 
     for imageID in imageIDs:
@@ -248,7 +254,7 @@ def image(id):
 
         images.append(image[0])
 
-    return jsonify(images)
+    return jsonify({"images": images, "detection": json.dumps(detection)})
 
 
 if __name__ == "__main__":

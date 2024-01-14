@@ -34,21 +34,37 @@
 		/>
 	</head>
 	<body>
+		<div id="detection"></div>
+		<br />
+		<p>Scroll to view photos</p>
+		<br />
 		<script>
 			const getDataFromJSON = () => {
 				fetch("{{ IMAGEAPIURL }}")
 					.then((response) => response.json())
 					.then((data) => {
-						for (let i = 0; i < data.length; i++) {
-							const image = data[i];
-							const imageElement = document.createElement("img");
-							imageElement.src = `data:image/png;base64,${image}`;
-							document.body.appendChild(imageElement);
-						}
+						const images = data.images;
+						const detection = data.detection;
+						showImages(images);
+						showDetection(detection);
 					})
 					.catch((error) => {
 						console.log(error);
 					});
+			};
+
+			const showImages = (images) => {
+				for (let i = 0; i < images.length; i++) {
+					const image = images[i];
+					const imageElement = document.createElement("img");
+					imageElement.src = `data:image/png;base64,${image}`;
+					document.body.appendChild(imageElement);
+				}
+			};
+
+			const showDetection = (detection) => {
+				const detectionElement = document.getElementById("detection");
+				detectionElement.innerHTML = detection;
 			};
 
 			getDataFromJSON();
