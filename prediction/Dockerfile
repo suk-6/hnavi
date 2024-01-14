@@ -8,8 +8,8 @@ ENV LC_CTYPE C.UTF-8
 
 LABEL maintainer="https://suk.kr"
 
-COPY . .
-
 RUN python3 -m pip install flask
+
+COPY . .
 
 CMD [ "python3", "./app.py" ]
