@@ -8,6 +8,7 @@ from db import conn, cur, loadDB
 from flask_cors import CORS
 from parse import parser
 import json
+from labels import labels
 
 app = Flask(__name__)
 CORS(app)
@@ -186,9 +187,25 @@ def overlaydb(id):
     detection = marker.get("detection", {})
     image = marker.get("image", {})
 
-    person = detection.get("0", 0)
-    car = detection.get("2", 0)
-    motorcycle = detection.get("3", 0) + detection.get("88", 0) + detection.get("1", 0)
+    dataCount = {
+        "person": {
+            "objectNames": ["person"],
+            "count": 0,
+        },
+        "car": {
+            "objectNames": ["car", "bus", "truck"],
+            "count": 0,
+        },
+        "motorcycle": {
+            "objectNames": ["motorcycle", "kickboard"],
+            "count": 0,
+        },
+    }
+
+    for object in dataCount.keys():
+        for objectName in dataCount[object]["objectNames"]:
+            objectClass = labels.index(objectName)
+            dataCount[object]["count"] += detection.get(str(objectClass), 0)
 
     return render_template(
         "overlay.html",
@@ -196,9 +213,9 @@ def overlaydb(id):
         region_depth=marker["region"],
         congestion=marker["congestion"],
         image=image,
-        person=person,
-        car=car,
-        motorcycle=motorcycle,
+        person=dataCount["person"]["count"],
+        car=dataCount["car"]["count"],
+        motorcycle=dataCount["motorcycle"]["count"],
     )
 
 

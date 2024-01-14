@@ -10,6 +10,8 @@ cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='marker'
 marker_exists = cur.fetchone()
 cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='polyline'")
 polyline_exists = cur.fetchone()
+cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='images'")
+images_exists = cur.fetchone()
 
 # Create tables if they don't exist
 if not marker_exists:
@@ -46,7 +48,24 @@ if not polyline_exists:
     """
     )
 
+if not images_exists:
+    cur.execute(
+        """
+    CREATE TABLE images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        image TEXT NOT NULL
+    )
+    """
+    )
+
 conn.commit()
+
+
+def saveImage(image):
+    cur.execute("INSERT INTO images (image) VALUES (?)", (image,))
+    conn.commit()
+
+    return cur.lastrowid
 
 
 def loadDB():

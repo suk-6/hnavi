@@ -9,6 +9,7 @@ import requests
 from labels import labels, weightofObject
 from tqdm import tqdm
 from mapdb import db
+from db import saveImage
 
 
 class parser:
@@ -211,7 +212,7 @@ class parser:
         midImage = self.frameToBase64(frame)
 
         cap.release()
-        return congestion, allObjects, midImage, imageIDs
+        return round(congestion, 1), allObjects, midImage, imageIDs
 
     def calcCongestion(self, objects):
         congestion = 0
@@ -225,7 +226,7 @@ class parser:
             congestion += objects[object] * weight
 
         # return round(((congestion**2) / 10e2), 1)
-        return round(congestion, 1)
+        return congestion
 
     def sumObjects(self, detection):
         objects = {key: 0 for key in range(len(labels))}
@@ -286,6 +287,24 @@ class parser:
         return None
 
     def saveDetectedFrame(self, frame, detection):
-        return ""
+        for object in detection:
+            x1, y1, x2, y2 = (
+                object["xmin"],
+                object["ymin"],
+                object["xmax"],
+                object["ymax"],
+            )
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
-        # TODO: Save Detected Frame
+            cv2.putText(
+                frame,
+                labels[object["label"]],
+                (x1, y1 - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.9,
+                (36, 255, 12),
+                2,
+            )
+            cv2.imwrite("/tmp/temp.jpg", frame)
+
+        return saveImage(self.frameToBase64(frame))
