@@ -38,6 +38,7 @@
 		<br />
 		<p>Scroll to view photos</p>
 		<br />
+		<div id="imageView" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
 		<script>
 			const getDataFromJSON = () => {
 				fetch("{{ IMAGEAPIURL }}")
@@ -54,11 +55,14 @@
 			};
 
 			const showImages = (images) => {
+				const imageViewElement = document.getElementById("imageView");
+
 				for (let i = 0; i < images.length; i++) {
 					const image = images[i];
 					const imageElement = document.createElement("img");
 					imageElement.src = `data:image/png;base64,${image}`;
-					document.body.appendChild(imageElement);
+					imageElement.className = "h-auto max-w-full rounded-lg";
+					imageViewElement.appendChild(imageElement);
 				}
 			};
 
