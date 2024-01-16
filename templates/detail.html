@@ -35,6 +35,36 @@
 	</head>
 	<body>
 		<div id="detection"></div>
+		<div
+			id="detectionView"
+			class="relative overflow-x-auto shadow-md sm:rounded-lg"
+		>
+			<table
+				class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+			>
+				<thead
+					class="text-xs text-gray-700 uppercase dark:text-gray-400"
+				>
+					<tr>
+						<th
+							scope="col"
+							class="px-6 py-3 bg-gray-50 dark:bg-gray-800"
+						>
+							Class
+						</th>
+						<th scope="col" class="px-6 py-3">Count</th>
+						<th
+							scope="col"
+							class="px-6 py-3 bg-gray-50 dark:bg-gray-800"
+						>
+							Class
+						</th>
+						<th scope="col" class="px-6 py-3">Count</th>
+					</tr>
+				</thead>
+				<tbody id="detectionViewBody"></tbody>
+			</table>
+		</div>
 		<br />
 		<p>Scroll to view photos</p>
 		<br />
@@ -54,6 +84,51 @@
 					});
 			};
 
+			const showDetection = (detection) => {
+				const detectionViewBodyElement =
+					document.getElementById("detectionViewBody");
+				const data = JSON.parse(detection);
+
+				for (let i = 0; i < Object.keys(data).length; i++) {
+					if (i % 2 == 0) {
+						const key = Object.keys(data)[i];
+						const subkey = Object.keys(data)[i + 1];
+
+						const rowElement = document.createElement("tr");
+						rowElement.className =
+							"border-b border-gray-200 dark:border-gray-700";
+
+						const classElement1 = document.createElement("th");
+						classElement1.className =
+							"px-6 py-4 font-medium text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-800";
+						classElement1.innerHTML = key;
+
+						const countElement1 = document.createElement("td");
+						countElement1.className = "px-6 py-4";
+						countElement1.innerHTML = data[key];
+
+						rowElement.appendChild(classElement1);
+						rowElement.appendChild(countElement1);
+
+						if (subkey != undefined) {
+							const classElement2 = document.createElement("td");
+							classElement2.className =
+								"px-6 py-4 font-medium text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-800";
+							classElement2.innerHTML = subkey;
+
+							const countElement2 = document.createElement("td");
+							countElement2.className = "px-6 py-4";
+							countElement2.innerHTML = data[subkey];
+
+							rowElement.appendChild(classElement2);
+							rowElement.appendChild(countElement2);
+						}
+
+						detectionViewBodyElement.appendChild(rowElement);
+					}
+				}
+			};
+
 			const showImages = (images) => {
 				const imageViewElement = document.getElementById("imageView");
 
@@ -64,11 +139,6 @@
 					imageElement.className = "h-auto max-w-full rounded-lg";
 					imageViewElement.appendChild(imageElement);
 				}
-			};
-
-			const showDetection = (detection) => {
-				const detectionElement = document.getElementById("detection");
-				detectionElement.innerHTML = detection;
 			};
 
 			getDataFromJSON();
