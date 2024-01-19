@@ -56,6 +56,11 @@ def dbrender():
     return render_template("db.html", apiKey=APIKEY, APIURL="/api/dbdata")
 
 
+@app.route("/data/<int:id>")
+def datarender(id):
+    return render_template("db.html", apiKey=APIKEY, APIURL=f"/api/data/{id}")
+
+
 @app.route("/db-view")
 def dbview():
     return render_template("db-view.html", APIURL="/api/dbdata")
@@ -223,6 +228,15 @@ def overlaydb(id):
 @app.route("/api/dbdata")
 def dbdata():
     return jsonify(dbData)
+
+
+@app.route("/api/data/<int:id>")
+def dataapi(id):
+    if os.path.exists(f"static/data{id}.json"):
+        with open(f"static/data{id}.json", "r") as f:
+            data = json.load(f)
+        return jsonify(data)
+    return "No data found", 404
 
 
 @app.route("/api/detail/<int:id>")
